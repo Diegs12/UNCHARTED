@@ -19,6 +19,8 @@
   @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
   @keyframes scaleIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
   @keyframes slideUp{from{opacity:0;transform:translateY(100%)}to{opacity:1;transform:translateY(0)}}
+  @keyframes glow{0%,100%{box-shadow:0 0 8px #00d4aa44}50%{box-shadow:0 0 24px #00d4aa88}}
+  @keyframes confetti{0%{transform:translateY(0) rotate(0)}100%{transform:translateY(-20px) rotate(360deg);opacity:0}}
   .gradient-text{background:linear-gradient(135deg,#00d4aa 0%,#00bcd4 50%,#c6f135 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
   .no-scrollbar::-webkit-scrollbar{display:none}
   .no-scrollbar{-ms-overflow-style:none;scrollbar-width:none}
@@ -30,11 +32,11 @@
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const { useState, useEffect, useCallback } = React;
+const { useState, useEffect, useCallback, useMemo } = React;
 
 // ═══════════════════════════════════════════════════════════
 // UNCHARTED — Sea-Doo Legendary Meetups 2026
-// Connection-First Digital Companion · Prototype v3
+// Connection-First Digital Companion · Prototype v4
 // ═══════════════════════════════════════════════════════════
 
 const C = {
@@ -60,17 +62,21 @@ function IcoShare({size=18,color="#888"}){return <svg width={size} height={size}
 function IcoSparkle({size=16,color="#888"}){return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round"><path d="M12 3l1.5 5.5L19 10l-5.5 1.5L12 17l-1.5-5.5L5 10l5.5-1.5L12 3z"/></svg>}
 function IcoPhone({size=16,color="#888"}){return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>}
 function IcoInstagram({size=16,color="#888"}){return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>}
-function IcoUtensils({size=20,color="#888",sw=1.5}){return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>}
-function IcoMinus({size=16,color="#888"}){return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2.5} strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>}
-function IcoCart({size=20,color="#888",sw=1.5}){return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>}
 function IcoImage({size=16,color="#888"}){return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>}
+function IcoMap({size=20,color="#888",sw=1.5}){return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>}
+function IcoLock({size=16,color="#888"}){return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>}
+function IcoUnlock({size=16,color="#888"}){return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>}
+function IcoEdit({size=16,color="#888"}){return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>}
+function IcoScan({size=20,color="#888"}){return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round"><path d="M2 8V6a4 4 0 0 1 4-4h2"/><path d="M16 2h2a4 4 0 0 1 4 4v2"/><path d="M22 16v2a4 4 0 0 1-4 4h-2"/><path d="M8 22H6a4 4 0 0 1-4-4v-2"/><line x1="6" y1="12" x2="18" y2="12"/></svg>}
+function IcoUpload({size=20,color="#888"}){return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>}
+function IcoPuzzle({size=20,color="#888"}){return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M19.439 7.85c-.049.322.059.648.289.878l1.568 1.568c.47.47.706 1.087.706 1.704s-.235 1.233-.706 1.704l-1.611 1.611a.98.98 0 0 1-.837.276c-.47-.07-.802-.48-.968-.925a2.501 2.501 0 1 0-3.214 3.214c.446.166.855.497.925.968a.979.979 0 0 1-.276.837l-1.61 1.61a2.404 2.404 0 0 1-1.705.707 2.402 2.402 0 0 1-1.704-.706l-1.568-1.568a1.026 1.026 0 0 0-.877-.29c-.493.074-.84.504-1.02.968a2.5 2.5 0 1 1-3.237-3.237c.464-.18.894-.527.967-1.02a1.026 1.026 0 0 0-.289-.877l-1.568-1.568A2.402 2.402 0 0 1 1.998 12c0-.617.236-1.234.706-1.704L4.23 8.77c.24-.24.581-.353.917-.303.515.077.877.528 1.073 1.01a2.5 2.5 0 1 0 3.259-3.259c-.482-.196-.933-.558-1.01-1.073-.05-.336.062-.676.303-.917l1.525-1.525A2.402 2.402 0 0 1 12 1.998c.617 0 1.234.236 1.704.706l1.568 1.568c.23.23.556.338.877.29.493-.074.84-.504 1.02-.968a2.5 2.5 0 1 1 3.237 3.237c-.464.18-.894.527-.967 1.02Z"/></svg>}
 
-// Social platform config
+// Social platform config with URL builders
 const PLATFORMS = [
-  { key:"ig", label:"Instagram", placeholder:"@yourhandle", icon:"ig" },
-  { key:"tiktok", label:"TikTok", placeholder:"@yourtiktok", icon:"tiktok" },
-  { key:"x", label:"X", placeholder:"@yourhandle", icon:"x" },
-  { key:"phone", label:"Phone", placeholder:"555-0000", icon:"phone" },
+  { key:"ig", label:"Instagram", placeholder:"yourusername", icon:"ig", url: h => `https://instagram.com/${h}` },
+  { key:"tiktok", label:"TikTok", placeholder:"yourusername", icon:"tiktok", url: h => `https://tiktok.com/@${h}` },
+  { key:"x", label:"X", placeholder:"yourusername", icon:"x", url: h => `https://x.com/${h}` },
+  { key:"phone", label:"Phone", placeholder:"5550000", icon:"phone", url: h => `tel:${h}` },
 ];
 
 function PlatformIcon({ type, size=16, color=C.teal }) {
@@ -81,21 +87,28 @@ function PlatformIcon({ type, size=16, color=C.teal }) {
   return null;
 }
 
+function getSocialUrl(platform, handle) {
+  const p = PLATFORMS.find(pl => pl.key === platform);
+  if (!p || !handle) return null;
+  const clean = handle.replace(/^@/, '').trim();
+  return p.url(clean);
+}
+
 // ── DEMO DATA ────────────────────────────────────────────
 
 const DEMO_CREW = [
-  {id:1,name:"Marcus Rivera",avatar:"🏄‍♂️",selfie:true,selfieGrad:"linear-gradient(135deg,#f093fb,#f5576c)",socials:{ig:"@marcusrides",tiktok:"@marcus.rides"},zone:"Water"},
-  {id:2,name:"Jasmine Chen",avatar:"🌊",selfie:true,selfieGrad:"linear-gradient(135deg,#4facfe,#00f2fe)",socials:{ig:"@jasmine.waves",x:"@jasminechen"},zone:"Beach"},
-  {id:3,name:"Tyler Brooks",avatar:"🚤",selfie:true,selfieGrad:"linear-gradient(135deg,#43e97b,#38f9d7)",socials:{ig:"@tyler_b"},zone:"Dock"},
-  {id:4,name:"Aaliyah Thompson",avatar:"☀️",selfie:true,selfieGrad:"linear-gradient(135deg,#fa709a,#fee140)",socials:{ig:"@aaliyah.t",tiktok:"@aaliyah_t"},zone:"Cabana"},
-  {id:5,name:"Carlos Medina",avatar:"🐬",selfie:true,selfieGrad:"linear-gradient(135deg,#a18cd1,#fbc2eb)",socials:{tiktok:"@carlos_m",x:"@carlosmedina"},zone:"Water"},
-  {id:6,name:"Hannah Foster",avatar:"🌺",selfie:true,selfieGrad:"linear-gradient(135deg,#ffecd2,#fcb69f)",socials:{x:"@hannahf_rides",ig:"@hannah.foster"},zone:"Beach"},
-  {id:7,name:"Derek Washington",avatar:"⚡",selfie:true,selfieGrad:"linear-gradient(135deg,#ff9a9e,#fecfef)",socials:{ig:"@derek.w",phone:"555-0198"},zone:"Water"},
-  {id:8,name:"Sofia Reyes",avatar:"🌴",selfie:true,selfieGrad:"linear-gradient(135deg,#f6d365,#fda085)",socials:{tiktok:"@sofiareyes",ig:"@sofia.r"},zone:"Cabana"},
-  {id:9,name:"Jake Morrison",avatar:"🎯",selfie:false,socials:{x:"@jake_morrison"},zone:"Dock"},
-  {id:10,name:"Priya Patel",avatar:"✨",selfie:true,selfieGrad:"linear-gradient(135deg,#89f7fe,#66a6ff)",socials:{ig:"@priya.p",tiktok:"@priya.patel",x:"@priyap"},zone:"Beach"},
-  {id:11,name:"Brandon Lee",avatar:"🔥",selfie:true,selfieGrad:"linear-gradient(135deg,#f5576c,#ff6b6b)",socials:{tiktok:"@brandonlee"},zone:"Water"},
-  {id:12,name:"Mia Rodriguez",avatar:"🦋",selfie:true,selfieGrad:"linear-gradient(135deg,#c2e9fb,#a1c4fd)",socials:{ig:"@mia.rod",x:"@mia_rod"},zone:"Cabana"},
+  {id:1,name:"Marcus Rivera",avatar:"🏄‍♂️",selfie:true,selfieGrad:"linear-gradient(135deg,#f093fb,#f5576c)",socials:{ig:"marcusrides",tiktok:"marcus.rides"},zone:"Water"},
+  {id:2,name:"Jasmine Chen",avatar:"🌊",selfie:true,selfieGrad:"linear-gradient(135deg,#4facfe,#00f2fe)",socials:{ig:"jasmine.waves",x:"jasminechen"},zone:"Beach"},
+  {id:3,name:"Tyler Brooks",avatar:"🚤",selfie:true,selfieGrad:"linear-gradient(135deg,#43e97b,#38f9d7)",socials:{ig:"tyler_b"},zone:"Dock"},
+  {id:4,name:"Aaliyah Thompson",avatar:"☀️",selfie:true,selfieGrad:"linear-gradient(135deg,#fa709a,#fee140)",socials:{ig:"aaliyah.t",tiktok:"aaliyah_t"},zone:"Cabana"},
+  {id:5,name:"Carlos Medina",avatar:"🐬",selfie:true,selfieGrad:"linear-gradient(135deg,#a18cd1,#fbc2eb)",socials:{tiktok:"carlos_m",x:"carlosmedina"},zone:"Water"},
+  {id:6,name:"Hannah Foster",avatar:"🌺",selfie:true,selfieGrad:"linear-gradient(135deg,#ffecd2,#fcb69f)",socials:{x:"hannahf_rides",ig:"hannah.foster"},zone:"Beach"},
+  {id:7,name:"Derek Washington",avatar:"⚡",selfie:true,selfieGrad:"linear-gradient(135deg,#ff9a9e,#fecfef)",socials:{ig:"derek.w",phone:"5550198"},zone:"Water"},
+  {id:8,name:"Sofia Reyes",avatar:"🌴",selfie:true,selfieGrad:"linear-gradient(135deg,#f6d365,#fda085)",socials:{tiktok:"sofiareyes",ig:"sofia.r"},zone:"Cabana"},
+  {id:9,name:"Jake Morrison",avatar:"🎯",selfie:false,socials:{x:"jake_morrison"},zone:"Dock"},
+  {id:10,name:"Priya Patel",avatar:"✨",selfie:true,selfieGrad:"linear-gradient(135deg,#89f7fe,#66a6ff)",socials:{ig:"priya.p",tiktok:"priya.patel",x:"priyap"},zone:"Beach"},
+  {id:11,name:"Brandon Lee",avatar:"🔥",selfie:true,selfieGrad:"linear-gradient(135deg,#f5576c,#ff6b6b)",socials:{tiktok:"brandonlee"},zone:"Water"},
+  {id:12,name:"Mia Rodriguez",avatar:"🦋",selfie:true,selfieGrad:"linear-gradient(135deg,#c2e9fb,#a1c4fd)",socials:{ig:"mia.rod",x:"mia_rod"},zone:"Cabana"},
 ];
 
 const MOMENT_GRADIENTS = [
@@ -125,35 +138,19 @@ const DEMO_MOMENTS = [
 
 const ZONES = ["All","Beach","Water","Cabana","Dock"];
 
-// ── FOOD MENU DATA ───────────────────────────────────────
+// ── SCAVENGER HUNT DATA ──────────────────────────────────
 
-const MENU_CATEGORIES = ["All","🔥 Grill","🐟 Catch","🥗 Bites","🍹 Drinks","🍧 Sweet"];
-
-const MENU_ITEMS = [
-  // Grill
-  {id:"f1",name:"The Legendary Burger",desc:"Double smash patty, secret sauce, pickled jalapeños, toasted brioche",price:14,cat:"🔥 Grill",emoji:"🍔",popular:true},
-  {id:"f2",name:"Jerk Chicken Skewers",desc:"Island spice rub, mango habanero glaze, cilantro lime drizzle",price:12,cat:"🔥 Grill",emoji:"🍗"},
-  {id:"f3",name:"Walking Tacos",desc:"Seasoned beef, all the fixings, straight in the Doritos bag",price:10,cat:"🔥 Grill",emoji:"🌮",popular:true},
-  // Fresh Catch
-  {id:"f4",name:"Blackened Mahi Tacos",desc:"Fresh-caught mahi, tropical slaw, chipotle crema, corn tortilla",price:13,cat:"🐟 Catch",emoji:"🐟",popular:true},
-  {id:"f5",name:"Coconut Shrimp Basket",desc:"Crispy coconut-crusted shrimp, pineapple dipping sauce, fries",price:15,cat:"🐟 Catch",emoji:"🍤"},
-  {id:"f6",name:"Poke Bowl",desc:"Ahi tuna, sushi rice, avocado, edamame, sesame ginger drizzle",price:16,cat:"🐟 Catch",emoji:"🥢"},
-  // Light Bites
-  {id:"f7",name:"Loaded Nachos",desc:"House chips, queso, pico de gallo, guac, sour cream",price:11,cat:"🥗 Bites",emoji:"🧀"},
-  {id:"f8",name:"Tropical Caesar Wrap",desc:"Grilled chicken, romaine, shaved parm, mango caesar",price:12,cat:"🥗 Bites",emoji:"🥗"},
-  {id:"f9",name:"Elote Corn Cups",desc:"Street-style corn, cotija, lime, tajín, cilantro",price:8,cat:"🥗 Bites",emoji:"🌽"},
-  // Drinks
-  {id:"f10",name:"The Uncharted",desc:"Blue curaçao, coconut rum, pineapple juice, fresh lime, crushed ice",price:12,cat:"🍹 Drinks",emoji:"🍹",popular:true},
-  {id:"f11",name:"Legendary Lemonade",desc:"Fresh-squeezed lemonade, muddled mint, cane sugar",price:8,cat:"🍹 Drinks",emoji:"🍋"},
-  {id:"f12",name:"Coconut Water",desc:"Straight from the source. Ice cold.",price:6,cat:"🍹 Drinks",emoji:"🥥"},
-  {id:"f13",name:"Florida Craft IPA",desc:"Local Florida Brew Co. Citrus-forward, crisp finish.",price:9,cat:"🍹 Drinks",emoji:"🍺"},
-  {id:"f14",name:"Sparkling Water",desc:"LaCroix Pamplemousse. Zero cal, max refreshment.",price:4,cat:"🍹 Drinks",emoji:"💧"},
-  // Sweet
-  {id:"f15",name:"Key Lime Pie Pop",desc:"Frozen key lime on a stick, graham cracker crust dip",price:7,cat:"🍧 Sweet",emoji:"🍦",popular:true},
-  {id:"f16",name:"Açaí Bowl",desc:"Blended açaí, topped with granola, banana, honey, coconut flakes",price:11,cat:"🍧 Sweet",emoji:"🫐"},
-  {id:"f17",name:"Churro Bites",desc:"Cinnamon sugar, chocolate dipping sauce, caramel drizzle",price:8,cat:"🍧 Sweet",emoji:"🍩"},
+const HUNT_CLUES = [
+  { id:"umbrella", name:"Umbrella", emoji:"☂️", word:"You're", riddle:"Where shade meets sand and sun can't reach, I stand tall guarding the beach.", color:"#ff8c42" },
+  { id:"seaweed", name:"Seaweed", emoji:"🌿", word:"always", riddle:"Tangled and green, I dance with the tide — find me where ocean and shoreline collide.", color:"#43e97b" },
+  { id:"conch-shell", name:"Conch Shell", emoji:"🐚", word:"one", riddle:"Hold me close and hear the sea — a spiral treasure, pink and free.", color:"#f093fb" },
+  { id:"tide-pool", name:"Tide Pool", emoji:"🪸", word:"ride", riddle:"A tiny ocean caught in stone, where hidden creatures make their home.", color:"#4facfe" },
+  { id:"driftwood", name:"Driftwood", emoji:"🪵", word:"away", riddle:"Once a tree, now shaped by the wave — bleached by sun, by the sea I was saved.", color:"#fda085" },
+  { id:"sandcastle", name:"Sandcastle", emoji:"🏰", word:"from", riddle:"Built from dreams and grains of shore, my towers stand for hours, no more.", color:"#fee140" },
+  { id:"coral-reef", name:"Coral Reef", emoji:"🪷", word:"extraordinary", riddle:"A rainbow city beneath the blue — I'm alive, though I look like stone to you.", color:"#00bcd4" },
 ];
 
+const FULL_PHRASE = "You're always one ride away from extraordinary";
 
 // ═══════════════════════════════════════════════════════════
 // SPLASH SCREEN
@@ -183,7 +180,7 @@ function SplashScreen({ onEnter }) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// ONBOARDING
+// ONBOARDING — now with handle-only social inputs
 // ═══════════════════════════════════════════════════════════
 
 function OnboardingScreen({ onComplete }) {
@@ -193,21 +190,24 @@ function OnboardingScreen({ onComplete }) {
     const g=["linear-gradient(135deg,#f093fb,#f5576c)","linear-gradient(135deg,#4facfe,#00f2fe)","linear-gradient(135deg,#43e97b,#38f9d7)","linear-gradient(135deg,#fa709a,#fee140)","linear-gradient(135deg,#a18cd1,#fbc2eb)"];
     return g[Math.floor(Math.random()*g.length)];
   });
-  const [activePlatforms, setActivePlatforms] = useState(new Set());
   const [socialValues, setSocialValues] = useState({ig:"",tiktok:"",x:"",phone:""});
   const [visible, setVisible] = useState(false);
   useEffect(() => { setTimeout(() => setVisible(true), 50); }, []);
-  const togglePlatform = (key) => { setActivePlatforms(p => { const n=new Set(p); n.has(key)?n.delete(key):n.add(key); return n; }); };
-  const updateSocial = (key, val) => { setSocialValues(p => ({...p,[key]:val})); };
+  const updateSocial = (key, val) => { setSocialValues(p => ({...p,[key]:val.replace(/^@/,'')})); };
   const canSubmit = name.trim().length > 1 && hasSelfie;
-  const handleSubmit = () => { if (!canSubmit) return; const socials={}; activePlatforms.forEach(k => { if(socialValues[k]?.trim()) socials[k]=socialValues[k].trim(); }); onComplete({name:name.trim(),hasSelfie,selfieGrad,socials}); };
+  const handleSubmit = () => {
+    if (!canSubmit) return;
+    const socials={};
+    Object.entries(socialValues).forEach(([k,v]) => { if(v.trim()) socials[k]=v.trim(); });
+    onComplete({name:name.trim(),hasSelfie,selfieGrad,socials});
+  };
 
   return (
     <div style={{position:"fixed",inset:0,background:C.bg,zIndex:90,display:"flex",flexDirection:"column",padding:"48px 24px 40px",overflowY:"auto",transition:"opacity 0.4s",opacity:visible?1:0}} className="no-scrollbar">
       <div style={{animation:"fadeUp 0.6s ease-out"}}>
         <p style={{color:C.teal,fontSize:12,letterSpacing:4,fontWeight:600,marginBottom:8}}>STEP INTO THE CREW</p>
         <h2 style={{fontSize:28,fontWeight:800,color:C.white,marginBottom:4}}>Join the Crew</h2>
-        <p style={{color:C.gray,fontSize:14,lineHeight:1.5,marginBottom:28}}>Snap a selfie and share your socials to connect with others today.</p>
+        <p style={{color:C.gray,fontSize:14,lineHeight:1.5,marginBottom:28}}>Snap a selfie and share your handles to connect with others today.</p>
       </div>
       {/* Selfie */}
       <div style={{animation:"fadeUp 0.6s ease-out 0.1s both",marginBottom:24,textAlign:"center"}}>
@@ -231,24 +231,25 @@ function OnboardingScreen({ onComplete }) {
         <label style={{color:C.grayLight,fontSize:12,fontWeight:600,letterSpacing:2,display:"block",marginBottom:8}}>YOUR NAME</label>
         <input value={name} onChange={e=>setName(e.target.value)} placeholder="Enter your name" style={{width:"100%",padding:"14px 16px",borderRadius:12,fontSize:16,color:C.white,background:C.card,border:`1px solid ${C.grayDark}`,outline:"none"}} onFocus={e=>e.target.style.borderColor=C.teal} onBlur={e=>e.target.style.borderColor=C.grayDark}/>
       </div>
-      {/* Socials */}
+      {/* Socials — always visible, handle-only inputs */}
       <div style={{animation:"fadeUp 0.6s ease-out 0.3s both",marginBottom:32}}>
-        <label style={{color:C.grayLight,fontSize:12,fontWeight:600,letterSpacing:2,display:"block",marginBottom:10}}>YOUR SOCIALS <span style={{color:C.grayDark,fontWeight:400}}>add as many as you want</span></label>
-        <div style={{display:"flex",gap:6,marginBottom:12,flexWrap:"wrap"}}>
-          {PLATFORMS.map(({key,label})=>{const a=activePlatforms.has(key);return(
-            <button key={key} onClick={()=>togglePlatform(key)} style={{padding:"8px 14px",borderRadius:20,fontSize:11,fontWeight:600,letterSpacing:0.5,display:"flex",alignItems:"center",gap:5,color:a?C.bg:C.gray,background:a?C.teal:C.card,border:a?"none":`1px solid ${C.grayDark}`,transition:"all 0.15s"}}>
-              <PlatformIcon type={key} size={13} color={a?C.bg:C.gray}/>{label}{a&&<IcoCheck size={12} color={C.bg}/>}
-            </button>
-          );})}
-        </div>
-        <div style={{display:"flex",flexDirection:"column",gap:8}}>
-          {PLATFORMS.filter(p=>activePlatforms.has(p.key)).map(({key,placeholder})=>(
-            <div key={key} style={{display:"flex",alignItems:"center",gap:8}}>
-              <div style={{width:36,height:36,borderRadius:10,background:`${C.teal}15`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><PlatformIcon type={key} size={16} color={C.teal}/></div>
-              <input value={socialValues[key]} onChange={e=>updateSocial(key,e.target.value)} placeholder={placeholder} style={{flex:1,padding:"10px 14px",borderRadius:10,fontSize:14,color:C.white,background:C.card,border:`1px solid ${C.grayDark}`,outline:"none"}} onFocus={e=>e.target.style.borderColor=C.teal} onBlur={e=>e.target.style.borderColor=C.grayDark}/>
+        <label style={{color:C.grayLight,fontSize:12,fontWeight:600,letterSpacing:2,display:"block",marginBottom:12}}>YOUR SOCIALS <span style={{color:C.grayDark,fontWeight:400,letterSpacing:0}}>just type your username</span></label>
+        <div style={{display:"flex",flexDirection:"column",gap:10}}>
+          {PLATFORMS.map(({key,placeholder,label})=>(
+            <div key={key} style={{display:"flex",alignItems:"center",gap:10}}>
+              <div style={{width:40,height:40,borderRadius:12,background:`${C.teal}12`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                <PlatformIcon type={key} size={18} color={socialValues[key]?C.teal:C.grayDark}/>
+              </div>
+              <div style={{flex:1,position:"relative"}}>
+                <input value={socialValues[key]} onChange={e=>updateSocial(key,e.target.value)} placeholder={placeholder}
+                  style={{width:"100%",padding:"12px 14px",borderRadius:12,fontSize:14,color:C.white,background:C.card,border:`1px solid ${socialValues[key]?C.teal+"44":C.grayDark}`,outline:"none",transition:"border-color 0.15s"}}
+                  onFocus={e=>e.target.style.borderColor=C.teal} onBlur={e=>e.target.style.borderColor=socialValues[key]?C.teal+"44":C.grayDark}/>
+              </div>
+              <span style={{fontSize:10,color:C.grayDark,fontWeight:600,letterSpacing:0.5,minWidth:52}}>{label}</span>
             </div>
           ))}
         </div>
+        <p style={{color:C.grayDark,fontSize:11,marginTop:8}}>Skip any you don't want to share. You can add them later from your profile.</p>
       </div>
       <button onClick={handleSubmit} style={{padding:"16px",borderRadius:16,fontWeight:700,fontSize:16,letterSpacing:1,color:canSubmit?C.bg:C.grayDark,background:canSubmit?C.gradient:C.card,opacity:canSubmit?1:0.5,transition:"all 0.2s",animation:"fadeUp 0.6s ease-out 0.4s both",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>LET'S GO <IcoArrow size={18} color={canSubmit?C.bg:C.grayDark}/></button>
       {!hasSelfie && name.trim().length > 1 && <p style={{color:C.gray,fontSize:11,textAlign:"center",marginTop:12}}>Take a selfie to continue — it's your check-in!</p>}
@@ -278,11 +279,11 @@ function Header({ profile }) {
   );
 }
 
-function BottomNav({ active, onNav, cartCount }) {
+function BottomNav({ active, onNav }) {
   const tabs = [
     {key:"crew",label:"Crew",Ico:IcoUsers},
     {key:"moments",label:"Moments",Ico:IcoCamera},
-    {key:"eats",label:"Eats",Ico:IcoUtensils},
+    {key:"hunt",label:"Hunt",Ico:IcoMap},
     {key:"vibes",label:"Vibes",Ico:IcoMusic},
     {key:"rate",label:"Rate",Ico:IcoStar},
   ];
@@ -293,11 +294,6 @@ function BottomNav({ active, onNav, cartCount }) {
           <Ico size={20} color={active===key?C.teal:C.grayDark} sw={active===key?2.5:1.5}/>
           <span style={{fontSize:10,fontWeight:600,letterSpacing:1,color:active===key?C.teal:C.grayDark}}>{label.toUpperCase()}</span>
           {active===key && <div style={{width:4,height:4,borderRadius:2,background:C.teal,marginTop:-2}}/>}
-          {key==="eats" && cartCount > 0 && (
-            <div style={{position:"absolute",top:2,right:"50%",marginRight:-16,width:18,height:18,borderRadius:9,background:C.coral,display:"flex",alignItems:"center",justifyContent:"center"}}>
-              <span style={{fontSize:10,color:C.white,fontWeight:800}}>{cartCount}</span>
-            </div>
-          )}
         </button>
       ))}
     </div>
@@ -305,17 +301,17 @@ function BottomNav({ active, onNav, cartCount }) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// PROFILE MODAL
+// PROFILE MODAL — with real social links
 // ═══════════════════════════════════════════════════════════
 
-function ProfileModal({ person, onClose, onConnect, isConnected, userHasSocials }) {
+function ProfileModal({ person, onClose, onConnect, isConnected, isYou, onEditProfile }) {
   if (!person) return null;
   const socialEntries = person.socials ? Object.entries(person.socials) : [];
   return (
     <div style={{position:"fixed",inset:0,zIndex:80,display:"flex",alignItems:"flex-end",justifyContent:"center",background:"rgba(0,0,0,0.7)",backdropFilter:"blur(4px)"}} onClick={onClose}>
       <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:430,background:C.card,borderRadius:"24px 24px 0 0",padding:"24px 24px 40px",animation:"slideUp 0.3s ease-out"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:24}}>
-          <span style={{fontSize:12,color:C.gray,fontWeight:600,letterSpacing:2}}>CREW MEMBER</span>
+          <span style={{fontSize:12,color:C.gray,fontWeight:600,letterSpacing:2}}>{isYou?"YOUR PROFILE":"CREW MEMBER"}</span>
           <button onClick={onClose} style={{color:C.gray}}><IcoX size={20} color={C.gray}/></button>
         </div>
         <div style={{textAlign:"center",marginBottom:20}}>
@@ -325,25 +321,34 @@ function ProfileModal({ person, onClose, onConnect, isConnected, userHasSocials 
           <h3 style={{fontSize:22,fontWeight:700,color:C.white,marginBottom:4}}>{person.name}</h3>
           {person.zone && <div style={{display:"inline-flex",alignItems:"center",gap:4,background:`${C.teal}15`,padding:"4px 12px",borderRadius:20}}><div style={{width:6,height:6,borderRadius:3,background:C.teal}}/><span style={{fontSize:11,color:C.teal,fontWeight:600}}>{person.zone} Zone</span></div>}
         </div>
-        {userHasSocials ? (
-          <>
-            {socialEntries.length > 0 && <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:16}}>
-              {socialEntries.map(([platform,handle])=>(
-                <div key={platform} style={{display:"flex",alignItems:"center",gap:12,background:C.bg,padding:"12px 16px",borderRadius:12}}>
-                  <PlatformIcon type={platform} size={18} color={C.teal}/>
-                  <div style={{flex:1}}><span style={{color:C.white,fontSize:14}}>{handle}</span></div>
-                  <span style={{color:C.grayDark,fontSize:10,fontWeight:600,letterSpacing:1}}>{PLATFORMS.find(p=>p.key===platform)?.label.toUpperCase()}</span>
-                </div>
-              ))}
-            </div>}
-            <button onClick={()=>onConnect(person.id)} style={{width:"100%",padding:"16px",borderRadius:14,fontWeight:700,fontSize:15,display:"flex",alignItems:"center",justifyContent:"center",gap:8,color:isConnected?C.teal:C.bg,background:isConnected?`${C.teal}15`:C.gradient,border:isConnected?`1px solid ${C.teal}33`:"none",transition:"all 0.2s"}}>
-              {isConnected ? <><IcoCheck size={18} color={C.teal}/> Connected</> : <><IcoShare size={18} color={C.bg}/> Connect</>}
-            </button>
-          </>
-        ) : (
-          <div style={{background:`${C.teal}08`,border:`1px solid ${C.teal}22`,borderRadius:14,padding:16,textAlign:"center"}}>
-            <IcoSparkle size={20} color={C.teal}/><p style={{color:C.grayLight,fontSize:13,lineHeight:1.5,marginTop:8}}>Share your socials to see others' contact details and connect.</p>
+        {/* Social links — tappable to open profiles */}
+        {socialEntries.length > 0 && <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:16}}>
+          {socialEntries.map(([platform,handle])=>{
+            const url = getSocialUrl(platform, handle);
+            const platInfo = PLATFORMS.find(p=>p.key===platform);
+            return (
+              <a key={platform} href={url} target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",gap:12,background:C.bg,padding:"12px 16px",borderRadius:12,textDecoration:"none",transition:"background 0.15s"}}
+                onMouseDown={e=>e.currentTarget.style.background=C.cardHover} onMouseUp={e=>e.currentTarget.style.background=C.bg}>
+                <PlatformIcon type={platform} size={18} color={C.teal}/>
+                <div style={{flex:1}}><span style={{color:C.white,fontSize:14}}>{handle}</span></div>
+                <span style={{color:C.teal,fontSize:10,fontWeight:600,letterSpacing:1}}>{platInfo?.label.toUpperCase()} →</span>
+              </a>
+            );
+          })}
+        </div>}
+        {socialEntries.length === 0 && !isYou && (
+          <div style={{background:`${C.grayDark}22`,borderRadius:12,padding:16,textAlign:"center",marginBottom:16}}>
+            <p style={{color:C.gray,fontSize:13}}>No socials shared yet.</p>
           </div>
+        )}
+        {isYou ? (
+          <button onClick={onEditProfile} style={{width:"100%",padding:"14px",borderRadius:14,fontWeight:700,fontSize:15,display:"flex",alignItems:"center",justifyContent:"center",gap:8,color:C.teal,background:`${C.teal}15`,border:`1px solid ${C.teal}33`,transition:"all 0.2s"}}>
+            <IcoEdit size={16} color={C.teal}/> Edit Profile
+          </button>
+        ) : (
+          <button onClick={()=>onConnect(person.id)} style={{width:"100%",padding:"14px",borderRadius:14,fontWeight:700,fontSize:15,display:"flex",alignItems:"center",justifyContent:"center",gap:8,color:isConnected?C.teal:C.bg,background:isConnected?`${C.teal}15`:C.gradient,border:isConnected?`1px solid ${C.teal}33`:"none",transition:"all 0.2s"}}>
+            {isConnected ? <><IcoCheck size={18} color={C.teal}/> Connected</> : <><IcoShare size={18} color={C.bg}/> Connect</>}
+          </button>
         )}
       </div>
     </div>
@@ -351,19 +356,82 @@ function ProfileModal({ person, onClose, onConnect, isConnected, userHasSocials 
 }
 
 // ═══════════════════════════════════════════════════════════
-// CREW BOARD
+// EDIT PROFILE MODAL
 // ═══════════════════════════════════════════════════════════
 
-function CrewBoard({ profile, connections, onConnect }) {
+function EditProfileModal({ profile, onSave, onClose }) {
+  const [socials, setSocials] = useState(profile?.socials || {});
+  const updateSocial = (key, val) => setSocials(p => ({...p,[key]:val.replace(/^@/,'')}));
+  const handleSave = () => {
+    const cleaned = {};
+    Object.entries(socials).forEach(([k,v]) => { if(v.trim()) cleaned[k]=v.trim(); });
+    onSave(cleaned);
+  };
+  return (
+    <div style={{position:"fixed",inset:0,zIndex:85,display:"flex",alignItems:"flex-end",justifyContent:"center",background:"rgba(0,0,0,0.7)",backdropFilter:"blur(4px)"}} onClick={onClose}>
+      <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:430,background:C.card,borderRadius:"24px 24px 0 0",padding:"24px 24px 40px",animation:"slideUp 0.3s ease-out"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+          <h3 style={{fontSize:18,fontWeight:700,color:C.white}}>Edit Profile</h3>
+          <button onClick={onClose}><IcoX size={20} color={C.gray}/></button>
+        </div>
+        <p style={{color:C.gray,fontSize:13,marginBottom:20}}>Update your social handles. Just type your username — no @ needed.</p>
+        <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:24}}>
+          {PLATFORMS.map(({key,placeholder,label})=>(
+            <div key={key} style={{display:"flex",alignItems:"center",gap:10}}>
+              <div style={{width:40,height:40,borderRadius:12,background:`${C.teal}12`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                <PlatformIcon type={key} size={18} color={socials[key]?C.teal:C.grayDark}/>
+              </div>
+              <input value={socials[key]||""} onChange={e=>updateSocial(key,e.target.value)} placeholder={placeholder}
+                style={{flex:1,padding:"12px 14px",borderRadius:12,fontSize:14,color:C.white,background:C.bg,border:`1px solid ${socials[key]?C.teal+"44":C.grayDark}`,outline:"none"}}
+                onFocus={e=>e.target.style.borderColor=C.teal} onBlur={e=>e.target.style.borderColor=socials[key]?C.teal+"44":C.grayDark}/>
+              <span style={{fontSize:10,color:C.grayDark,fontWeight:600,minWidth:52}}>{label}</span>
+            </div>
+          ))}
+        </div>
+        <button onClick={handleSave} style={{width:"100%",padding:"16px",borderRadius:14,fontWeight:700,fontSize:16,color:C.bg,background:C.gradient,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+          <IcoCheck size={18} color={C.bg}/> Save Changes
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
+// CREW BOARD — tappable cards with social links
+// ═══════════════════════════════════════════════════════════
+
+function CrewBoard({ profile, connections, onConnect, onUpdateProfile }) {
   const [selectedPerson, setSelectedPerson] = useState(null);
-  const allCrew = profile ? [{id:0,name:profile.name,avatar:"😎",selfie:true,selfieGrad:profile.selfieGrad,socials:profile.socials,zone:"Beach",isYou:true},...DEMO_CREW] : DEMO_CREW;
-  const userHasSocials = profile && Object.keys(profile.socials||{}).length > 0;
+  const [showEdit, setShowEdit] = useState(false);
+  const [selectedIsYou, setSelectedIsYou] = useState(false);
+  const userEntry = profile ? {id:0,name:profile.name,avatar:"😎",selfie:true,selfieGrad:profile.selfieGrad,socials:profile.socials,zone:"Beach",isYou:true} : null;
+  const allCrew = userEntry ? [userEntry,...DEMO_CREW] : DEMO_CREW;
+  const hasSocials = profile && Object.keys(profile.socials||{}).length > 0;
+
+  const handleCardTap = (person) => {
+    setSelectedPerson(person);
+    setSelectedIsYou(!!person.isYou);
+  };
+
+  const handleEditProfile = () => {
+    setSelectedPerson(null);
+    setShowEdit(true);
+  };
+
+  const handleSaveProfile = (newSocials) => {
+    onUpdateProfile(newSocials);
+    setShowEdit(false);
+  };
+
   return (
     <div style={{padding:"20px 16px",animation:"fadeUp 0.4s ease-out"}} className="no-scrollbar">
-      {userHasSocials ? (
+      {!hasSocials && (
+        <button onClick={()=>{setSelectedPerson(userEntry);setSelectedIsYou(true);}} style={{width:"100%",background:`${C.lime}08`,border:`1px solid ${C.lime}22`,borderRadius:14,padding:"12px 16px",marginBottom:20,display:"flex",alignItems:"center",gap:10}}>
+          <IcoSparkle size={16} color={C.lime}/><span style={{color:C.lime,fontSize:13,fontWeight:500}}>Tap here to add your socials and unlock connections</span>
+        </button>
+      )}
+      {hasSocials && (
         <div style={{background:`${C.teal}10`,border:`1px solid ${C.teal}20`,borderRadius:14,padding:"12px 16px",marginBottom:20,display:"flex",alignItems:"center",gap:10}}><IcoCheck size={16} color={C.teal}/><span style={{color:C.teal,fontSize:13,fontWeight:500}}>You're sharing — tap anyone to connect!</span></div>
-      ) : (
-        <div style={{background:`${C.lime}08`,border:`1px solid ${C.lime}22`,borderRadius:14,padding:"12px 16px",marginBottom:20,display:"flex",alignItems:"center",gap:10}}><IcoSparkle size={16} color={C.lime}/><span style={{color:C.lime,fontSize:13,fontWeight:500}}>Share your socials to unlock connections</span></div>
       )}
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
         <h3 style={{fontSize:18,fontWeight:700,color:C.white}}>Today's Crew</h3>
@@ -371,37 +439,69 @@ function CrewBoard({ profile, connections, onConnect }) {
       </div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(2, 1fr)",gap:10}}>
         {allCrew.map((person,i)=>{const connected=connections.has(person.id);return(
-          <button key={person.id} onClick={()=>!person.isYou&&setSelectedPerson(person)} style={{background:C.card,borderRadius:16,padding:"18px 14px",textAlign:"center",border:person.isYou?`1px solid ${C.teal}33`:`1px solid ${C.grayDark}33`,transition:"all 0.15s",position:"relative",animation:`fadeUp 0.4s ease-out ${i*0.04}s both`}} onMouseDown={e=>{if(!person.isYou)e.currentTarget.style.transform="scale(0.97)"}} onMouseUp={e=>e.currentTarget.style.transform="scale(1)"}>
+          <button key={person.id} onClick={()=>handleCardTap(person)} style={{background:C.card,borderRadius:16,padding:"18px 14px",textAlign:"center",border:person.isYou?`1px solid ${C.teal}33`:`1px solid ${C.grayDark}33`,transition:"all 0.15s",position:"relative",animation:`fadeUp 0.4s ease-out ${i*0.04}s both`}} onMouseDown={e=>e.currentTarget.style.transform="scale(0.97)"} onMouseUp={e=>e.currentTarget.style.transform="scale(1)"}>
             {person.isYou && <div style={{position:"absolute",top:8,right:8,fontSize:9,color:C.teal,fontWeight:700,letterSpacing:1,background:`${C.teal}15`,padding:"2px 8px",borderRadius:10}}>YOU</div>}
             {connected && <div style={{position:"absolute",top:8,left:8,width:18,height:18,borderRadius:9,background:C.teal,display:"flex",alignItems:"center",justifyContent:"center"}}><IcoCheck size={11} color={C.bg} sw={3}/></div>}
             {person.selfie ? (
               <div style={{width:52,height:52,borderRadius:16,background:person.selfieGrad,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 8px",border:`2px solid ${C.grayDark}44`}}><span style={{fontSize:24}}>{person.avatar}</span></div>
             ) : (<div style={{fontSize:36,marginBottom:8}}>{person.avatar}</div>)}
             <div style={{fontSize:14,fontWeight:600,color:C.white,marginBottom:2}}>{person.name.split(" ")[0]}</div>
-            <div style={{fontSize:11,color:C.gray}}>{person.name.split(" ")[1]}</div>
-            {person.socials && <div style={{display:"flex",gap:4,justifyContent:"center",marginTop:6}}>{Object.keys(person.socials).map(k=><div key={k} style={{width:18,height:18,borderRadius:5,background:`${C.teal}15`,display:"flex",alignItems:"center",justifyContent:"center"}}><PlatformIcon type={k} size={10} color={C.teal}/></div>)}</div>}
+            <div style={{fontSize:11,color:C.gray}}>{person.name.split(" ")[1]||""}</div>
+            {person.socials && Object.keys(person.socials).length > 0 && <div style={{display:"flex",gap:4,justifyContent:"center",marginTop:6}}>{Object.keys(person.socials).map(k=><div key={k} style={{width:18,height:18,borderRadius:5,background:`${C.teal}15`,display:"flex",alignItems:"center",justifyContent:"center"}}><PlatformIcon type={k} size={10} color={C.teal}/></div>)}</div>}
           </button>
         );})}
       </div>
-      <ProfileModal person={selectedPerson} onClose={()=>setSelectedPerson(null)} onConnect={onConnect} isConnected={selectedPerson?connections.has(selectedPerson.id):false} userHasSocials={userHasSocials}/>
+      <ProfileModal person={selectedPerson} onClose={()=>setSelectedPerson(null)} onConnect={onConnect} isConnected={selectedPerson?connections.has(selectedPerson.id):false} isYou={selectedIsYou} onEditProfile={handleEditProfile}/>
+      {showEdit && <EditProfileModal profile={profile} onSave={handleSaveProfile} onClose={()=>setShowEdit(false)}/>}
     </div>
   );
 }
 
 // ═══════════════════════════════════════════════════════════
-// MOMENTS FEED
+// MOMENTS FEED — with photo upload UI
 // ═══════════════════════════════════════════════════════════
 
 function MomentsFeed({ profile }) {
   const [zoneFilter, setZoneFilter] = useState("All");
   const [liked, setLiked] = useState(new Set());
   const [galleryExpanded, setGalleryExpanded] = useState(false);
-  const allMoments = profile?.hasSelfie ? [{id:99,zone:"Beach",uploader:"You",avatar:"😎",gradient:profile.selfieGrad,time:"Just now",likes:3,caption:`${profile.name} just checked in! Let's go! 🤙`,checkin:true,overlay:"😎"},...DEMO_MOMENTS] : DEMO_MOMENTS;
+  const [uploads, setUploads] = useState([]);
+  const [showUpload, setShowUpload] = useState(false);
+
+  const allMoments = [...uploads, ...(profile?.hasSelfie ? [{id:99,zone:"Beach",uploader:"You",avatar:"😎",gradient:profile.selfieGrad,time:"Just now",likes:3,caption:`${profile.name} just checked in! Let's go! 🤙`,checkin:true,overlay:"😎"}] : []), ...DEMO_MOMENTS];
   const filtered = zoneFilter==="All" ? allMoments : allMoments.filter(m=>m.zone===zoneFilter);
   const toggleLike = (id) => { setLiked(p=>{const n=new Set(p);n.has(id)?n.delete(id):n.add(id);return n;}); };
 
+  const simulateUpload = () => {
+    const grads = MOMENT_GRADIENTS;
+    const newMoment = {
+      id: Date.now(), zone: ZONES[1+Math.floor(Math.random()*4)],
+      uploader: profile?.name || "You", avatar: "😎",
+      gradient: grads[Math.floor(Math.random()*grads.length)],
+      time: "Just now", likes: 0, caption: "Fresh from the disposable camera! 📸",
+      checkin: false, overlay: "📷", isUpload: true,
+    };
+    setUploads(p => [newMoment, ...p]);
+    setShowUpload(false);
+  };
+
   return (
     <div style={{padding:"20px 16px"}} className="no-scrollbar">
+      {/* Upload CTA */}
+      <div style={{background:`linear-gradient(135deg,${C.teal}15,${C.cyan}10)`,border:`1px solid ${C.teal}33`,borderRadius:16,padding:20,marginBottom:20,textAlign:"center",animation:"fadeUp 0.4s ease-out"}}>
+        <IcoUpload size={28} color={C.teal}/>
+        <h4 style={{color:C.white,fontSize:16,fontWeight:700,marginTop:8,marginBottom:4}}>Upload Your Camera Shots</h4>
+        <p style={{color:C.gray,fontSize:12,lineHeight:1.5,marginBottom:14}}>Drop those disposable camera pics here — they'll show up for the whole crew instantly.</p>
+        <button onClick={simulateUpload} style={{padding:"12px 28px",borderRadius:12,color:C.bg,fontWeight:700,fontSize:14,background:C.gradient,display:"inline-flex",alignItems:"center",gap:8}}>
+          <IcoCamera size={16} color={C.bg}/> Upload Photos
+        </button>
+      </div>
+      {/* Upload count */}
+      {uploads.length > 0 && (
+        <div style={{background:`${C.lime}08`,border:`1px solid ${C.lime}22`,borderRadius:12,padding:"10px 14px",marginBottom:16,display:"flex",alignItems:"center",gap:8}}>
+          <IcoCheck size={14} color={C.lime}/><span style={{color:C.lime,fontSize:12,fontWeight:600}}>{uploads.length} photo{uploads.length>1?"s":""} uploaded — visible to the crew!</span>
+        </div>
+      )}
       {/* Pro Gallery */}
       <div style={{marginBottom:24}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
@@ -414,7 +514,7 @@ function MomentsFeed({ profile }) {
         </div>
         <div style={{display:galleryExpanded?"grid":"flex",gridTemplateColumns:galleryExpanded?"repeat(2,1fr)":undefined,gap:10,overflowX:galleryExpanded?"visible":"auto",paddingBottom:4}} className="no-scrollbar">
           {PRO_GALLERY.map((photo,i)=>(
-            <div key={photo.id} style={{minWidth:galleryExpanded?undefined:140,height:galleryExpanded?120:100,borderRadius:14,background:photo.gradient,position:"relative",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden",animation:galleryExpanded?`fadeUp 0.3s ease-out ${i*0.05}s both`:undefined}}>
+            <div key={photo.id} style={{minWidth:galleryExpanded?undefined:140,height:galleryExpanded?120:100,borderRadius:14,background:photo.gradient,position:"relative",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
               <span style={{fontSize:32}}>{photo.icon}</span>
               <div style={{position:"absolute",bottom:0,left:0,right:0,padding:"6px 10px",background:"linear-gradient(transparent,rgba(0,0,0,0.6))"}}><span style={{fontSize:10,color:C.white,fontWeight:600}}>{photo.label}</span></div>
             </div>
@@ -422,18 +522,19 @@ function MomentsFeed({ profile }) {
         </div>
         <p style={{fontSize:11,color:C.grayDark,marginTop:8}}>Professional photos by Rooted Creative · Updated live</p>
       </div>
-      {/* Guest Moments */}
+      {/* Zone Filter */}
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}><h3 style={{fontSize:15,fontWeight:700,color:C.white}}>Guest Moments</h3></div>
-      <button style={{width:"100%",padding:14,borderRadius:14,marginBottom:16,background:`${C.teal}10`,border:`1px dashed ${C.teal}44`,display:"flex",alignItems:"center",justifyContent:"center",gap:8,color:C.teal,fontSize:14,fontWeight:600}}><IcoPlus size={18} color={C.teal}/> Upload a Moment</button>
       <div style={{display:"flex",gap:8,marginBottom:16,overflowX:"auto",paddingBottom:4}} className="no-scrollbar">
         {ZONES.map(z=><button key={z} onClick={()=>setZoneFilter(z)} style={{padding:"6px 16px",borderRadius:20,fontSize:12,fontWeight:600,letterSpacing:0.5,whiteSpace:"nowrap",transition:"all 0.15s",color:zoneFilter===z?C.bg:C.gray,background:zoneFilter===z?C.teal:C.card,border:zoneFilter===z?"none":`1px solid ${C.grayDark}44`}}>{z}</button>)}
       </div>
+      {/* Moments Feed */}
       <div style={{display:"flex",flexDirection:"column",gap:16}}>
         {filtered.map((m,i)=>{const isLiked=liked.has(m.id);return(
-          <div key={m.id} style={{borderRadius:18,overflow:"hidden",background:C.card,border:m.checkin?`1px solid ${C.teal}33`:`1px solid ${C.grayDark}33`,animation:`fadeUp 0.4s ease-out ${i*0.06}s both`}}>
+          <div key={m.id} style={{borderRadius:18,overflow:"hidden",background:C.card,border:m.isUpload?`1px solid ${C.lime}33`:m.checkin?`1px solid ${C.teal}33`:`1px solid ${C.grayDark}33`,animation:`fadeUp 0.4s ease-out ${i*0.06}s both`}}>
             <div style={{height:m.checkin?160:220,background:m.gradient,position:"relative",display:"flex",alignItems:"center",justifyContent:"center"}}>
-              {m.checkin && <div style={{position:"absolute",top:12,left:12,background:`${C.teal}cc`,backdropFilter:"blur(8px)",padding:"4px 10px",borderRadius:10}}><span style={{fontSize:10,color:C.white,fontWeight:700,letterSpacing:1}}>CHECK-IN</span></div>}
-              {!m.checkin && <div style={{position:"absolute",top:12,right:12,background:"rgba(0,0,0,0.5)",backdropFilter:"blur(8px)",padding:"4px 10px",borderRadius:10}}><span style={{fontSize:10,color:C.white,fontWeight:600}}>{m.zone}</span></div>}
+              {m.isUpload && <div style={{position:"absolute",top:12,left:12,background:`${C.lime}cc`,backdropFilter:"blur(8px)",padding:"4px 10px",borderRadius:10}}><span style={{fontSize:10,color:C.bg,fontWeight:700,letterSpacing:1}}>DISPOSABLE CAM</span></div>}
+              {m.checkin && !m.isUpload && <div style={{position:"absolute",top:12,left:12,background:`${C.teal}cc`,backdropFilter:"blur(8px)",padding:"4px 10px",borderRadius:10}}><span style={{fontSize:10,color:C.white,fontWeight:700,letterSpacing:1}}>CHECK-IN</span></div>}
+              {!m.checkin && !m.isUpload && <div style={{position:"absolute",top:12,right:12,background:"rgba(0,0,0,0.5)",backdropFilter:"blur(8px)",padding:"4px 10px",borderRadius:10}}><span style={{fontSize:10,color:C.white,fontWeight:600}}>{m.zone}</span></div>}
               <div style={{fontSize:48,color:"rgba(255,255,255,0.3)"}}>{m.overlay}</div>
             </div>
             <div style={{padding:"14px 16px"}}>
@@ -451,140 +552,288 @@ function MomentsFeed({ profile }) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// EATS — Custom Event Food Menu
+// SCAVENGER HUNT
 // ═══════════════════════════════════════════════════════════
 
-function EatsMenu({ cart, setCart }) {
-  const [catFilter, setCatFilter] = useState("All");
-  const [showCart, setShowCart] = useState(false);
-  const filtered = catFilter === "All" ? MENU_ITEMS : MENU_ITEMS.filter(i => i.cat === catFilter);
-  const totalItems = Object.values(cart).reduce((s, v) => s + v, 0);
-  const totalPrice = MENU_ITEMS.reduce((s, item) => s + (cart[item.id] || 0) * item.price, 0);
+function ScavengerHunt() {
+  const [unlocked, setUnlocked] = useState(new Set());
+  const [shuffledOrder, setShuffledOrder] = useState(null);
+  const [showRules, setShowRules] = useState(true);
+  const [firstVisit, setFirstVisit] = useState(true);
+  const [activeClue, setActiveClue] = useState(null);
+  const [scanStep, setScanStep] = useState(null); // 'scan' | 'selfie' | 'reveal'
+  const [revealedWord, setRevealedWord] = useState(null);
+  const [nextRiddle, setNextRiddle] = useState(null);
 
-  const addItem = (id) => setCart(p => ({ ...p, [id]: (p[id] || 0) + 1 }));
-  const removeItem = (id) => setCart(p => { const n = { ...p }; if (n[id] > 1) n[id]--; else delete n[id]; return n; });
+  const progress = unlocked.size;
+  const isComplete = progress === 7;
+
+  // Get the ordered phrase words
+  const phraseWords = FULL_PHRASE.split(" ");
+
+  // Shuffle remaining clues for this user (after first pick)
+  const shuffleRemaining = (excludeIds) => {
+    const remaining = HUNT_CLUES.filter(c => !excludeIds.has(c.id));
+    for (let i = remaining.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [remaining[i], remaining[j]] = [remaining[j], remaining[i]];
+    }
+    return remaining.map(c => c.id);
+  };
+
+  const getNextUnfound = (currentUnlocked) => {
+    if (!shuffledOrder) return null;
+    return shuffledOrder.find(id => !currentUnlocked.has(id)) || null;
+  };
+
+  const handlePickFirst = (clueId) => {
+    const newUnlocked = new Set();
+    // Create shuffled order excluding the first pick
+    const order = shuffleRemaining(new Set([clueId]));
+    setShuffledOrder(order);
+    setActiveClue(clueId);
+    setScanStep('scan');
+  };
+
+  const handleScan = () => {
+    setScanStep('selfie');
+  };
+
+  const handleSelfie = () => {
+    const clue = HUNT_CLUES.find(c => c.id === activeClue);
+    const newUnlocked = new Set([...unlocked, activeClue]);
+    setUnlocked(newUnlocked);
+    setRevealedWord(clue.word);
+    setScanStep('reveal');
+
+    // Find next clue riddle
+    if (newUnlocked.size < 7) {
+      const nextId = (shuffledOrder || []).find(id => !newUnlocked.has(id));
+      if (nextId) {
+        const nextClue = HUNT_CLUES.find(c => c.id === nextId);
+        setNextRiddle(nextClue);
+      }
+    }
+  };
+
+  const handleCloseReveal = () => {
+    setScanStep(null);
+    setActiveClue(null);
+    setRevealedWord(null);
+  };
+
+  const handleTileClick = (clueId) => {
+    if (unlocked.has(clueId)) return; // already found
+    if (!shuffledOrder && !unlocked.size) {
+      // First pick
+      handlePickFirst(clueId);
+    } else {
+      setActiveClue(clueId);
+      setScanStep('scan');
+    }
+  };
+
+  const dismissRules = () => {
+    setShowRules(false);
+    setFirstVisit(false);
+  };
 
   return (
-    <div style={{ padding: "20px 16px" }} className="no-scrollbar">
+    <div style={{padding:"20px 16px",animation:"fadeUp 0.4s ease-out"}} className="no-scrollbar">
       {/* Header */}
-      <div style={{ textAlign: "center", marginBottom: 20, animation: "fadeUp 0.4s ease-out" }}>
-        <div style={{ fontSize: 36, marginBottom: 8 }}>🍽️</div>
-        <h3 className="gradient-text" style={{ fontSize: 20, fontWeight: 800, letterSpacing: 1, marginBottom: 4 }}>THE LEGENDARY MENU</h3>
-        <p style={{ color: C.gray, fontSize: 13, lineHeight: 1.5 }}>Crafted exclusively for today's meetup. Order from your phone.</p>
+      <div style={{textAlign:"center",marginBottom:20}}>
+        <div style={{fontSize:36,marginBottom:8}}>🗺️</div>
+        <h3 className="gradient-text" style={{fontSize:20,fontWeight:800,letterSpacing:1,marginBottom:4}}>ISLAND SCAVENGER HUNT</h3>
+        <p style={{color:C.gray,fontSize:13,lineHeight:1.5}}>Find all 7 clues to unlock the secret phrase.</p>
+        <button onClick={()=>setShowRules(true)} style={{marginTop:8,fontSize:11,color:C.teal,fontWeight:600,background:`${C.teal}15`,padding:"4px 14px",borderRadius:20,border:`1px solid ${C.teal}33`}}>
+          📋 Rules
+        </button>
       </div>
 
-      {/* Category Filters */}
-      <div style={{ display: "flex", gap: 6, marginBottom: 20, overflowX: "auto", paddingBottom: 4 }} className="no-scrollbar">
-        {MENU_CATEGORIES.map(cat => (
-          <button key={cat} onClick={() => setCatFilter(cat)} style={{
-            padding: "7px 14px", borderRadius: 20, fontSize: 11, fontWeight: 600, letterSpacing: 0.3,
-            whiteSpace: "nowrap", transition: "all 0.15s",
-            color: catFilter === cat ? C.bg : C.gray,
-            background: catFilter === cat ? C.teal : C.card,
-            border: catFilter === cat ? "none" : `1px solid ${C.grayDark}44`,
-          }}>{cat}</button>
-        ))}
+      {/* Progress Bar */}
+      <div style={{marginBottom:24}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+          <span style={{fontSize:12,fontWeight:600,color:C.grayLight}}>{progress}/7 CLUES FOUND</span>
+          {progress > 0 && <span style={{fontSize:11,color:C.teal,fontWeight:600}}>{Math.round(progress/7*100)}%</span>}
+        </div>
+        <div style={{height:8,borderRadius:4,background:C.grayDark,overflow:"hidden"}}>
+          <div style={{height:"100%",width:`${progress/7*100}%`,background:C.gradient,borderRadius:4,transition:"width 0.5s ease-out"}}/>
+        </div>
       </div>
 
-      {/* Menu Items */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {filtered.map((item, i) => {
-          const qty = cart[item.id] || 0;
-          return (
-            <div key={item.id} style={{
-              background: C.card, borderRadius: 16, padding: "16px",
-              border: qty > 0 ? `1px solid ${C.teal}33` : `1px solid ${C.grayDark}33`,
-              animation: `fadeUp 0.3s ease-out ${i * 0.04}s both`,
-              transition: "border-color 0.2s",
+      {/* Secret Phrase Progress */}
+      <div style={{background:C.card,borderRadius:16,padding:16,marginBottom:20,border:`1px solid ${C.grayDark}33`}}>
+        <label style={{color:C.grayLight,fontSize:11,fontWeight:600,letterSpacing:2,display:"block",marginBottom:10}}>SECRET PHRASE</label>
+        <div style={{display:"flex",flexWrap:"wrap",gap:6,justifyContent:"center"}}>
+          {HUNT_CLUES.map((clue, i) => (
+            <div key={clue.id} style={{padding:"6px 12px",borderRadius:8,fontSize:13,fontWeight:700,letterSpacing:0.5,
+              background:unlocked.has(clue.id)?`${C.teal}20`:C.bg,
+              color:unlocked.has(clue.id)?C.teal:C.grayDark,
+              border:`1px solid ${unlocked.has(clue.id)?C.teal+"44":C.grayDark+"44"}`,
+              transition:"all 0.3s"
             }}>
-              <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
-                <div style={{
-                  width: 56, height: 56, borderRadius: 14, flexShrink: 0,
-                  background: `linear-gradient(135deg, ${C.card}, ${C.grayDark}55)`,
-                  display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28,
-                }}>{item.emoji}</div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
-                    <span style={{ fontSize: 15, fontWeight: 700, color: C.white }}>{item.name}</span>
-                    {item.popular && <span style={{ fontSize: 9, fontWeight: 700, color: C.orange, background: `${C.orange}15`, padding: "2px 6px", borderRadius: 6, letterSpacing: 0.5 }}>POPULAR</span>}
-                  </div>
-                  <p style={{ fontSize: 12, color: C.gray, lineHeight: 1.4, marginBottom: 8 }}>{item.desc}</p>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    <span style={{ fontSize: 16, fontWeight: 800, color: C.teal }}>${item.price}</span>
-                    {qty === 0 ? (
-                      <button onClick={() => addItem(item.id)} style={{
-                        padding: "8px 20px", borderRadius: 12, fontSize: 12, fontWeight: 700,
-                        color: C.teal, background: `${C.teal}15`, border: `1px solid ${C.teal}33`,
-                        display: "flex", alignItems: "center", gap: 4, transition: "all 0.15s",
-                      }}>
-                        <IcoPlus size={14} color={C.teal} /> Add
-                      </button>
-                    ) : (
-                      <div style={{ display: "flex", alignItems: "center", gap: 0, background: `${C.teal}15`, borderRadius: 12, border: `1px solid ${C.teal}33` }}>
-                        <button onClick={() => removeItem(item.id)} style={{ padding: "8px 12px", display: "flex", alignItems: "center" }}>
-                          <IcoMinus size={14} color={C.teal} />
-                        </button>
-                        <span style={{ fontSize: 14, fontWeight: 800, color: C.teal, minWidth: 20, textAlign: "center" }}>{qty}</span>
-                        <button onClick={() => addItem(item.id)} style={{ padding: "8px 12px", display: "flex", alignItems: "center" }}>
-                          <IcoPlus size={14} color={C.teal} />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
+              {unlocked.has(clue.id) ? clue.word : "???"}
             </div>
+          ))}
+        </div>
+        {isComplete && (
+          <div style={{textAlign:"center",marginTop:12,animation:"scaleIn 0.4s ease-out"}}>
+            <p style={{color:C.lime,fontSize:14,fontWeight:700}}>🎉 "{FULL_PHRASE}"</p>
+            <p style={{color:C.gray,fontSize:11,marginTop:4}}>Show this to the cabana to claim your prize!</p>
+          </div>
+        )}
+      </div>
+
+      {/* Next Clue Riddle */}
+      {nextRiddle && !scanStep && !isComplete && unlocked.size > 0 && (
+        <div style={{background:`linear-gradient(135deg,${nextRiddle.color}15,${C.card})`,border:`1px solid ${nextRiddle.color}33`,borderRadius:16,padding:16,marginBottom:20,animation:"fadeUp 0.4s ease-out"}}>
+          <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+            <IcoSparkle size={16} color={nextRiddle.color}/>
+            <span style={{fontSize:12,fontWeight:700,color:nextRiddle.color,letterSpacing:1}}>YOUR NEXT CLUE</span>
+          </div>
+          <p style={{color:C.white,fontSize:14,lineHeight:1.6,fontStyle:"italic"}}>"{nextRiddle.riddle}"</p>
+          <p style={{color:C.gray,fontSize:11,marginTop:8}}>Find the QR code at this spot and scan it!</p>
+        </div>
+      )}
+
+      {/* Instruction for first time */}
+      {unlocked.size === 0 && !scanStep && (
+        <div style={{background:`${C.cyan}10`,border:`1px solid ${C.cyan}22`,borderRadius:14,padding:"12px 16px",marginBottom:20,display:"flex",alignItems:"center",gap:10}}>
+          <span style={{fontSize:18}}>👇</span>
+          <span style={{color:C.cyan,fontSize:13,fontWeight:500}}>Pick a clue to start your hunt! The name is your first hint.</span>
+        </div>
+      )}
+
+      {/* Clue Tiles */}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:10}}>
+        {HUNT_CLUES.map((clue,i) => {
+          const found = unlocked.has(clue.id);
+          return (
+            <button key={clue.id} onClick={()=>!found&&handleTileClick(clue.id)} style={{
+              background:found?`${clue.color}12`:C.card,
+              borderRadius:16, padding:"20px 14px", textAlign:"center",
+              border:found?`1px solid ${clue.color}44`:`1px solid ${C.grayDark}33`,
+              transition:"all 0.2s", position:"relative",
+              animation:`fadeUp 0.3s ease-out ${i*0.05}s both`,
+              opacity:found?0.8:1,
+            }} onMouseDown={e=>{if(!found)e.currentTarget.style.transform="scale(0.95)"}} onMouseUp={e=>e.currentTarget.style.transform="scale(1)"}>
+              {found && <div style={{position:"absolute",top:8,right:8}}><IcoCheck size={16} color={clue.color} sw={3}/></div>}
+              <div style={{fontSize:32,marginBottom:6}}>{clue.emoji}</div>
+              <div style={{fontSize:13,fontWeight:700,color:found?clue.color:C.white,marginBottom:2}}>{clue.name}</div>
+              {found ? (
+                <div style={{fontSize:12,fontWeight:800,color:clue.color,marginTop:4}}>"{clue.word}"</div>
+              ) : (
+                <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:4,marginTop:4}}>
+                  <IcoLock size={12} color={C.grayDark}/>
+                  <span style={{fontSize:11,color:C.grayDark}}>Locked</span>
+                </div>
+              )}
+            </button>
           );
         })}
       </div>
 
-      {/* Floating Cart Bar */}
-      {totalItems > 0 && (
-        <div style={{
-          position: "fixed", bottom: 72, left: "50%", transform: "translateX(-50%)",
-          width: "calc(100% - 32px)", maxWidth: 398,
-          background: C.gradient, borderRadius: 16, padding: "14px 20px",
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          boxShadow: `0 8px 32px ${C.teal}44`, animation: "slideUp 0.3s ease-out",
-          zIndex: 40,
-        }} onClick={() => setShowCart(!showCart)}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <IcoCart size={20} color={C.bg} />
-            <span style={{ fontSize: 14, fontWeight: 800, color: C.bg }}>{totalItems} item{totalItems > 1 ? "s" : ""}</span>
+      {/* Prize Info */}
+      <div style={{background:C.card,borderRadius:16,padding:16,marginTop:20,border:`1px solid ${C.grayDark}33`,textAlign:"center"}}>
+        <span style={{fontSize:24}}>🏆</span>
+        <p style={{color:C.white,fontSize:14,fontWeight:700,marginTop:6}}>First 3 to finish win a special prize!</p>
+        <p style={{color:C.gray,fontSize:12,marginTop:4}}>Complete the phrase and show it to the cabana.</p>
+      </div>
+
+      {/* RULES MODAL */}
+      {showRules && (
+        <div style={{position:"fixed",inset:0,zIndex:80,display:"flex",alignItems:"flex-end",justifyContent:"center",background:"rgba(0,0,0,0.7)",backdropFilter:"blur(4px)"}} onClick={dismissRules}>
+          <div onClick={e=>e.stopPropagation()} style={{width:"100%",maxWidth:430,background:C.card,borderRadius:"24px 24px 0 0",padding:"24px 24px 40px",animation:"slideUp 0.3s ease-out",maxHeight:"80vh",overflowY:"auto"}} className="no-scrollbar">
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+              <h3 style={{fontSize:20,fontWeight:800,color:C.white}}>🗺️ Hunt Rules</h3>
+              <button onClick={dismissRules}><IcoX size={20} color={C.gray}/></button>
+            </div>
+            <div style={{display:"flex",flexDirection:"column",gap:16}}>
+              <div style={{display:"flex",gap:12,alignItems:"flex-start"}}>
+                <div style={{width:32,height:32,borderRadius:10,background:`${C.teal}20`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:14,fontWeight:800,color:C.teal}}>1</div>
+                <div><p style={{color:C.white,fontSize:14,fontWeight:600,marginBottom:2}}>Pick your first clue</p><p style={{color:C.gray,fontSize:12,lineHeight:1.5}}>Choose any clue tile to start. The name hints at the location!</p></div>
+              </div>
+              <div style={{display:"flex",gap:12,alignItems:"flex-start"}}>
+                <div style={{width:32,height:32,borderRadius:10,background:`${C.cyan}20`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:14,fontWeight:800,color:C.cyan}}>2</div>
+                <div><p style={{color:C.white,fontSize:14,fontWeight:600,marginBottom:2}}>Find & scan the QR code</p><p style={{color:C.gray,fontSize:12,lineHeight:1.5}}>Head to the spot, find the hidden QR code, and scan it with the app.</p></div>
+              </div>
+              <div style={{display:"flex",gap:12,alignItems:"flex-start"}}>
+                <div style={{width:32,height:32,borderRadius:10,background:`${C.lime}20`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:14,fontWeight:800,color:C.lime}}>3</div>
+                <div><p style={{color:C.white,fontSize:14,fontWeight:600,marginBottom:2}}>Take a selfie to unlock</p><p style={{color:C.gray,fontSize:12,lineHeight:1.5}}>Snap a selfie with the QR code to prove you were there. This unlocks your puzzle piece!</p></div>
+              </div>
+              <div style={{display:"flex",gap:12,alignItems:"flex-start"}}>
+                <div style={{width:32,height:32,borderRadius:10,background:`${C.orange}20`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:14,fontWeight:800,color:C.orange}}>4</div>
+                <div><p style={{color:C.white,fontSize:14,fontWeight:600,marginBottom:2}}>Get your next riddle</p><p style={{color:C.gray,fontSize:12,lineHeight:1.5}}>Each unlock reveals a riddle leading to your next clue. Your path is unique!</p></div>
+              </div>
+              <div style={{display:"flex",gap:12,alignItems:"flex-start"}}>
+                <div style={{width:32,height:32,borderRadius:10,background:`${C.coral}20`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontSize:14,fontWeight:800,color:C.coral}}>5</div>
+                <div><p style={{color:C.white,fontSize:14,fontWeight:600,marginBottom:2}}>Complete the phrase & win!</p><p style={{color:C.gray,fontSize:12,lineHeight:1.5}}>Collect all 7 words, say the phrase at the cabana. First 3 to finish get the best prizes!</p></div>
+              </div>
+            </div>
+            <button onClick={dismissRules} style={{width:"100%",padding:16,borderRadius:14,fontWeight:700,fontSize:16,color:C.bg,background:C.gradient,marginTop:24,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+              Let's Hunt! <IcoArrow size={18} color={C.bg}/>
+            </button>
           </div>
-          <span style={{ fontSize: 18, fontWeight: 800, color: C.bg }}>${totalPrice}</span>
         </div>
       )}
 
-      {/* Cart Sheet */}
-      {showCart && totalItems > 0 && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 70, display: "flex", alignItems: "flex-end", justifyContent: "center", background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)" }} onClick={() => setShowCart(false)}>
-          <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 430, background: C.card, borderRadius: "24px 24px 0 0", padding: "24px 24px 40px", animation: "slideUp 0.3s ease-out", maxHeight: "70vh", overflowY: "auto" }} className="no-scrollbar">
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-              <h3 style={{ fontSize: 18, fontWeight: 800, color: C.white }}>Your Order</h3>
-              <button onClick={() => setShowCart(false)}><IcoX size={20} color={C.gray} /></button>
-            </div>
-            {MENU_ITEMS.filter(item => cart[item.id]).map(item => (
-              <div key={item.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 0", borderBottom: `1px solid ${C.grayDark}33` }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <span style={{ fontSize: 24 }}>{item.emoji}</span>
-                  <div>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: C.white }}>{item.name}</div>
-                    <div style={{ fontSize: 12, color: C.gray }}>${item.price} × {cart[item.id]}</div>
-                  </div>
+      {/* SCAN/SELFIE/REVEAL MODAL */}
+      {scanStep && (
+        <div style={{position:"fixed",inset:0,zIndex:80,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.85)",backdropFilter:"blur(8px)"}}>
+          <div style={{width:"100%",maxWidth:380,background:C.card,borderRadius:24,padding:32,textAlign:"center",animation:"scaleIn 0.3s ease-out",margin:16}}>
+            {scanStep === 'scan' && (
+              <>
+                <div style={{width:80,height:80,borderRadius:20,background:`${C.teal}15`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 16px",animation:"glow 2s infinite"}}>
+                  <IcoScan size={36} color={C.teal}/>
                 </div>
-                <span style={{ fontSize: 15, fontWeight: 700, color: C.teal }}>${item.price * cart[item.id]}</span>
-              </div>
-            ))}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 0 8px", marginTop: 8 }}>
-              <span style={{ fontSize: 16, fontWeight: 700, color: C.white }}>Total</span>
-              <span className="gradient-text" style={{ fontSize: 22, fontWeight: 800 }}>${totalPrice}</span>
-            </div>
-            <button style={{
-              width: "100%", padding: 16, borderRadius: 14, fontWeight: 700, fontSize: 16, letterSpacing: 1,
-              color: C.bg, background: C.gradient, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 12,
-            }}>PLACE ORDER <IcoArrow size={18} color={C.bg} /></button>
-            <p style={{ fontSize: 11, color: C.grayDark, textAlign: "center", marginTop: 10 }}>Pick up at the Cabana Bar · ~10 min</p>
+                <h3 style={{fontSize:20,fontWeight:800,color:C.white,marginBottom:6}}>Scan QR Code</h3>
+                <p style={{color:C.gray,fontSize:13,lineHeight:1.5,marginBottom:24}}>Point your camera at the QR code at the <span style={{color:HUNT_CLUES.find(c=>c.id===activeClue)?.color,fontWeight:700}}>{HUNT_CLUES.find(c=>c.id===activeClue)?.name}</span> spot.</p>
+                <button onClick={handleScan} style={{width:"100%",padding:16,borderRadius:14,fontWeight:700,fontSize:16,color:C.bg,background:C.gradient,marginBottom:10,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+                  <IcoScan size={18} color={C.bg}/> Scan Now (Demo)
+                </button>
+                <button onClick={()=>{setScanStep(null);setActiveClue(null);}} style={{color:C.gray,fontSize:13,fontWeight:500,padding:8}}>Cancel</button>
+              </>
+            )}
+            {scanStep === 'selfie' && (
+              <>
+                <div style={{width:80,height:80,borderRadius:20,background:`${C.cyan}15`,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 16px"}}>
+                  <IcoCamera size={36} color={C.cyan}/>
+                </div>
+                <h3 style={{fontSize:20,fontWeight:800,color:C.white,marginBottom:6}}>Take a Selfie!</h3>
+                <p style={{color:C.gray,fontSize:13,lineHeight:1.5,marginBottom:24}}>Snap a selfie with the QR code to prove you found it.</p>
+                <button onClick={handleSelfie} style={{width:"100%",padding:16,borderRadius:14,fontWeight:700,fontSize:16,color:C.bg,background:`linear-gradient(135deg,${C.cyan},${C.teal})`,marginBottom:10,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+                  <IcoCamera size={18} color={C.bg}/> Take Selfie (Demo)
+                </button>
+              </>
+            )}
+            {scanStep === 'reveal' && (
+              <>
+                <div style={{fontSize:48,marginBottom:12,animation:"float 2s ease-in-out infinite"}}>{HUNT_CLUES.find(c=>c.id===activeClue)?.emoji}</div>
+                <h3 style={{fontSize:20,fontWeight:800,color:C.white,marginBottom:4}}>Puzzle Piece Unlocked!</h3>
+                <div style={{display:"inline-block",padding:"10px 24px",borderRadius:12,background:`${C.teal}20`,border:`2px solid ${C.teal}44`,marginTop:8,marginBottom:16}}>
+                  <span style={{fontSize:24,fontWeight:800,color:C.teal}}>{revealedWord}</span>
+                </div>
+                <p style={{color:C.gray,fontSize:12,marginBottom:6}}>{progress}/7 pieces collected</p>
+                {nextRiddle && !isComplete && (
+                  <div style={{background:C.bg,borderRadius:14,padding:14,marginTop:12,marginBottom:8,textAlign:"left",border:`1px solid ${nextRiddle.color}33`}}>
+                    <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:6}}>
+                      <IcoSparkle size={14} color={nextRiddle.color}/>
+                      <span style={{fontSize:11,fontWeight:700,color:nextRiddle.color,letterSpacing:1}}>NEXT CLUE</span>
+                    </div>
+                    <p style={{color:C.grayLight,fontSize:13,lineHeight:1.5,fontStyle:"italic"}}>"{nextRiddle.riddle}"</p>
+                  </div>
+                )}
+                {isComplete && (
+                  <div style={{background:`${C.lime}10`,borderRadius:14,padding:14,marginTop:12,border:`1px solid ${C.lime}33`}}>
+                    <p style={{color:C.lime,fontSize:16,fontWeight:800}}>🎉 YOU DID IT!</p>
+                    <p style={{color:C.gray,fontSize:12,marginTop:4}}>Head to the cabana and say the phrase to win!</p>
+                  </div>
+                )}
+                <button onClick={handleCloseReveal} style={{width:"100%",padding:14,borderRadius:14,fontWeight:700,fontSize:15,color:C.bg,background:C.gradient,marginTop:16}}>
+                  {isComplete ? "View My Puzzle" : "Continue Hunting"}
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -598,20 +847,20 @@ function EatsMenu({ cart, setCart }) {
 
 function VibeLayer() {
   return (
-    <div style={{ padding: "20px 16px", animation: "fadeUp 0.4s ease-out" }}>
-      <div style={{ textAlign: "center", marginBottom: 24 }}>
-        <div style={{ fontSize: 40, marginBottom: 12 }}>🎵</div>
-        <h3 className="gradient-text" style={{ fontSize: 20, fontWeight: 800, letterSpacing: 1, marginBottom: 6 }}>THE OFFICIAL SOUNDTRACK</h3>
-        <p style={{ color: C.gray, fontSize: 13, lineHeight: 1.5, maxWidth: 280, margin: "0 auto" }}>Ocean waves, beach energy, and the perfect vibe for an unforgettable day on the water.</p>
+    <div style={{padding:"20px 16px",animation:"fadeUp 0.4s ease-out"}}>
+      <div style={{textAlign:"center",marginBottom:24}}>
+        <div style={{fontSize:40,marginBottom:12}}>🎵</div>
+        <h3 className="gradient-text" style={{fontSize:20,fontWeight:800,letterSpacing:1,marginBottom:6}}>THE OFFICIAL SOUNDTRACK</h3>
+        <p style={{color:C.gray,fontSize:13,lineHeight:1.5,maxWidth:280,margin:"0 auto"}}>Ocean waves, beach energy, and the perfect vibe for an unforgettable day on the water.</p>
       </div>
-      <div style={{ borderRadius: 16, overflow: "hidden", background: C.card, border: `1px solid ${C.grayDark}33`, marginBottom: 20 }}>
-        <iframe style={{ borderRadius: 12, border: "none" }}
+      <div style={{borderRadius:16,overflow:"hidden",background:C.card,border:`1px solid ${C.grayDark}33`,marginBottom:20}}>
+        <iframe style={{borderRadius:12,border:"none"}}
           src="https://open.spotify.com/embed/playlist/2hmLDliFT9mW84XHxRUzwx?utm_source=generator&theme=0"
-          width="100%" height="352" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" />
+          width="100%" height="352" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"/>
       </div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center" }}>
-        {["ocean","waves","sunshine","chill","adventure","golden hour","salt life","endless summer"].map(tag => (
-          <span key={tag} style={{ padding: "6px 14px", borderRadius: 20, fontSize: 11, fontWeight: 500, color: C.grayLight, background: C.card, border: `1px solid ${C.grayDark}33`, letterSpacing: 0.5 }}>#{tag}</span>
+      <div style={{display:"flex",flexWrap:"wrap",gap:8,justifyContent:"center"}}>
+        {["ocean","waves","sunshine","chill","adventure","golden hour","salt life","endless summer"].map(tag=>(
+          <span key={tag} style={{padding:"6px 14px",borderRadius:20,fontSize:11,fontWeight:500,color:C.grayLight,background:C.card,border:`1px solid ${C.grayDark}33`,letterSpacing:0.5}}>#{tag}</span>
         ))}
       </div>
     </div>
@@ -627,61 +876,56 @@ function Closeout({ profile, connections }) {
   const [favMoment, setFavMoment] = useState("");
   const [giveaway, setGiveaway] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const connectedNames = DEMO_CREW.filter(p => connections.has(p.id)).map(p => p.name.split(" ")[0]);
+  const connectedNames = DEMO_CREW.filter(p=>connections.has(p.id)).map(p=>p.name.split(" ")[0]);
 
   if (submitted) return (
-    <div style={{ padding: "60px 24px", textAlign: "center", animation: "scaleIn 0.4s ease-out", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "60vh" }}>
-      <div style={{ fontSize: 64, marginBottom: 20 }}>🎉</div>
-      <h3 className="gradient-text" style={{ fontSize: 26, fontWeight: 800, marginBottom: 8 }}>Thanks for an epic day!</h3>
-      <p style={{ color: C.gray, fontSize: 14, lineHeight: 1.6, maxWidth: 280 }}>Your photos will arrive in your inbox within 24 hours. See you at the next one.</p>
-      {giveaway && <div style={{ marginTop: 24, background: `${C.lime}10`, border: `1px solid ${C.lime}22`, borderRadius: 14, padding: "12px 20px", display: "flex", alignItems: "center", gap: 8 }}><span style={{ fontSize: 18 }}>🌺</span><span style={{ color: C.lime, fontSize: 13, fontWeight: 600 }}>You're entered to win the Hawaiian shirt!</span></div>}
+    <div style={{padding:"60px 24px",textAlign:"center",animation:"scaleIn 0.4s ease-out",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",minHeight:"60vh"}}>
+      <div style={{fontSize:64,marginBottom:20}}>🎉</div>
+      <h3 className="gradient-text" style={{fontSize:26,fontWeight:800,marginBottom:8}}>Thanks for an epic day!</h3>
+      <p style={{color:C.gray,fontSize:14,lineHeight:1.6,maxWidth:280}}>Your photos will arrive in your inbox within 24 hours. See you at the next one.</p>
+      {giveaway && <div style={{marginTop:24,background:`${C.lime}10`,border:`1px solid ${C.lime}22`,borderRadius:14,padding:"12px 20px",display:"flex",alignItems:"center",gap:8}}><span style={{fontSize:18}}>🌺</span><span style={{color:C.lime,fontSize:13,fontWeight:600}}>You're entered to win the Hawaiian shirt!</span></div>}
     </div>
   );
 
   return (
-    <div style={{ padding: "20px 16px", animation: "fadeUp 0.4s ease-out" }} className="no-scrollbar">
-      <div style={{ textAlign: "center", marginBottom: 28 }}>
-        <div style={{ fontSize: 36, marginBottom: 8 }}>🌅</div>
-        <h3 style={{ fontSize: 22, fontWeight: 800, color: C.white, marginBottom: 4 }}>How Was Your Day?</h3>
-        <p style={{ color: C.gray, fontSize: 13 }}>Take a sec to reflect on the vibes.</p>
+    <div style={{padding:"20px 16px",animation:"fadeUp 0.4s ease-out"}} className="no-scrollbar">
+      <div style={{textAlign:"center",marginBottom:28}}>
+        <div style={{fontSize:36,marginBottom:8}}>🌅</div>
+        <h3 style={{fontSize:22,fontWeight:800,color:C.white,marginBottom:4}}>How Was Your Day?</h3>
+        <p style={{color:C.gray,fontSize:13}}>Take a sec to reflect on the vibes.</p>
       </div>
-      {/* Stars */}
-      <div style={{ textAlign: "center", marginBottom: 32 }}>
-        <label style={{ color: C.grayLight, fontSize: 12, fontWeight: 600, letterSpacing: 2, display: "block", marginBottom: 12 }}>RATE THE VIBES</label>
-        <div style={{ display: "flex", justifyContent: "center", gap: 8 }}>
-          {[1,2,3,4,5].map(s => <button key={s} onClick={() => setRating(s)} style={{ transition: "transform 0.15s" }} onMouseDown={e => e.currentTarget.style.transform = "scale(0.85)"} onMouseUp={e => e.currentTarget.style.transform = "scale(1)"}><IcoStar size={36} color={s <= rating ? C.lime : C.grayDark} fill={s <= rating ? C.lime : "none"} sw={1.5} /></button>)}
+      <div style={{textAlign:"center",marginBottom:32}}>
+        <label style={{color:C.grayLight,fontSize:12,fontWeight:600,letterSpacing:2,display:"block",marginBottom:12}}>RATE THE VIBES</label>
+        <div style={{display:"flex",justifyContent:"center",gap:8}}>
+          {[1,2,3,4,5].map(s=><button key={s} onClick={()=>setRating(s)} style={{transition:"transform 0.15s"}} onMouseDown={e=>e.currentTarget.style.transform="scale(0.85)"} onMouseUp={e=>e.currentTarget.style.transform="scale(1)"}><IcoStar size={36} color={s<=rating?C.lime:C.grayDark} fill={s<=rating?C.lime:"none"} sw={1.5}/></button>)}
         </div>
-        {rating > 0 && <p style={{ color: C.lime, fontSize: 12, marginTop: 8, fontWeight: 600 }}>{rating === 5 ? "Legendary! 🔥" : rating === 4 ? "Amazing! ✨" : rating === 3 ? "Good vibes! 🌊" : rating === 2 ? "It was alright" : "Thanks for the feedback"}</p>}
+        {rating>0 && <p style={{color:C.lime,fontSize:12,marginTop:8,fontWeight:600}}>{rating===5?"Legendary! 🔥":rating===4?"Amazing! ✨":rating===3?"Good vibes! 🌊":rating===2?"It was alright":"Thanks for the feedback"}</p>}
       </div>
-      {/* Fav Moment */}
-      <div style={{ marginBottom: 24 }}>
-        <label style={{ color: C.grayLight, fontSize: 12, fontWeight: 600, letterSpacing: 2, display: "block", marginBottom: 8 }}>FAVORITE MOMENT</label>
-        <textarea value={favMoment} onChange={e => setFavMoment(e.target.value)} placeholder="What was the highlight of your day?" rows={3} style={{ width: "100%", padding: "14px 16px", borderRadius: 14, fontSize: 14, color: C.white, background: C.card, border: `1px solid ${C.grayDark}`, outline: "none", resize: "none", lineHeight: 1.5 }} onFocus={e => e.target.style.borderColor = C.teal} onBlur={e => e.target.style.borderColor = C.grayDark} />
+      <div style={{marginBottom:24}}>
+        <label style={{color:C.grayLight,fontSize:12,fontWeight:600,letterSpacing:2,display:"block",marginBottom:8}}>FAVORITE MOMENT</label>
+        <textarea value={favMoment} onChange={e=>setFavMoment(e.target.value)} placeholder="What was the highlight of your day?" rows={3} style={{width:"100%",padding:"14px 16px",borderRadius:14,fontSize:14,color:C.white,background:C.card,border:`1px solid ${C.grayDark}`,outline:"none",resize:"none",lineHeight:1.5}} onFocus={e=>e.target.style.borderColor=C.teal} onBlur={e=>e.target.style.borderColor=C.grayDark}/>
       </div>
-      {/* Connections */}
       {connectedNames.length > 0 && (
-        <div style={{ marginBottom: 24 }}>
-          <label style={{ color: C.grayLight, fontSize: 12, fontWeight: 600, letterSpacing: 2, display: "block", marginBottom: 8 }}>YOU CONNECTED WITH</label>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{connectedNames.map(n => <span key={n} style={{ padding: "6px 14px", borderRadius: 20, fontSize: 12, fontWeight: 600, color: C.teal, background: `${C.teal}10`, border: `1px solid ${C.teal}22` }}>{n}</span>)}</div>
+        <div style={{marginBottom:24}}>
+          <label style={{color:C.grayLight,fontSize:12,fontWeight:600,letterSpacing:2,display:"block",marginBottom:8}}>YOU CONNECTED WITH</label>
+          <div style={{display:"flex",flexWrap:"wrap",gap:6}}>{connectedNames.map(n=><span key={n} style={{padding:"6px 14px",borderRadius:20,fontSize:12,fontWeight:600,color:C.teal,background:`${C.teal}10`,border:`1px solid ${C.teal}22`}}>{n}</span>)}</div>
         </div>
       )}
-      {/* Giveaway */}
-      <div style={{ borderRadius: 16, overflow: "hidden", marginBottom: 20, border: giveaway ? `1px solid ${C.lime}33` : `1px solid ${C.grayDark}`, background: giveaway ? `${C.lime}06` : C.card, transition: "all 0.2s" }}>
-        <div style={{ height: 80, background: "linear-gradient(135deg, #00d4aa 0%, #c6f135 50%, #00bcd4 100%)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
-          <span style={{ fontSize: 40 }}>🌺</span>
-          <div style={{ position: "absolute", top: 8, right: 10, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(6px)", padding: "3px 10px", borderRadius: 10 }}><span style={{ fontSize: 10, color: C.white, fontWeight: 700, letterSpacing: 1 }}>LIMITED EDITION</span></div>
+      <div style={{borderRadius:16,overflow:"hidden",marginBottom:20,border:giveaway?`1px solid ${C.lime}33`:`1px solid ${C.grayDark}`,background:giveaway?`${C.lime}06`:C.card,transition:"all 0.2s"}}>
+        <div style={{height:80,background:"linear-gradient(135deg, #00d4aa 0%, #c6f135 50%, #00bcd4 100%)",display:"flex",alignItems:"center",justifyContent:"center",position:"relative"}}>
+          <span style={{fontSize:40}}>🌺</span>
+          <div style={{position:"absolute",top:8,right:10,background:"rgba(0,0,0,0.5)",backdropFilter:"blur(6px)",padding:"3px 10px",borderRadius:10}}><span style={{fontSize:10,color:C.white,fontWeight:700,letterSpacing:1}}>LIMITED EDITION</span></div>
         </div>
-        <div style={{ padding: 16 }}>
-          <h4 style={{ fontSize: 16, fontWeight: 700, color: C.white, marginBottom: 4 }}>Win a Sea-Doo Hawaiian Shirt</h4>
-          <p style={{ fontSize: 12, color: C.gray, lineHeight: 1.5, marginBottom: 12 }}>Exclusive Legendary Meetups edition. Rate your day and you're automatically entered. Winner announced at the Après Party!</p>
-          <button onClick={() => setGiveaway(!giveaway)} style={{ width: "100%", padding: 14, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: giveaway ? `${C.lime}15` : C.gradient, color: giveaway ? C.lime : C.bg, fontWeight: 700, fontSize: 14, transition: "all 0.2s" }}>
-            {giveaway ? <><IcoCheck size={16} color={C.lime} /> You're Entered!</> : <><IcoSparkle size={16} color={C.bg} /> Enter to Win</>}
+        <div style={{padding:16}}>
+          <h4 style={{fontSize:16,fontWeight:700,color:C.white,marginBottom:4}}>Win a Sea-Doo Hawaiian Shirt</h4>
+          <p style={{fontSize:12,color:C.gray,lineHeight:1.5,marginBottom:12}}>Exclusive Legendary Meetups edition. Rate your day and you're automatically entered!</p>
+          <button onClick={()=>setGiveaway(!giveaway)} style={{width:"100%",padding:14,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",gap:8,background:giveaway?`${C.lime}15`:C.gradient,color:giveaway?C.lime:C.bg,fontWeight:700,fontSize:14,transition:"all 0.2s"}}>
+            {giveaway ? <><IcoCheck size={16} color={C.lime}/> You're Entered!</> : <><IcoSparkle size={16} color={C.bg}/> Enter to Win</>}
           </button>
         </div>
       </div>
-      {/* Submit */}
-      <button onClick={() => rating > 0 && setSubmitted(true)} style={{ width: "100%", padding: 16, borderRadius: 14, fontWeight: 700, fontSize: 16, letterSpacing: 1, color: rating > 0 ? C.bg : C.grayDark, background: rating > 0 ? C.gradient : C.card, opacity: rating > 0 ? 1 : 0.5, transition: "all 0.2s", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-        SUBMIT <IcoArrow size={18} color={rating > 0 ? C.bg : C.grayDark} />
+      <button onClick={()=>rating>0&&setSubmitted(true)} style={{width:"100%",padding:16,borderRadius:14,fontWeight:700,fontSize:16,letterSpacing:1,color:rating>0?C.bg:C.grayDark,background:rating>0?C.gradient:C.card,opacity:rating>0?1:0.5,transition:"all 0.2s",display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+        SUBMIT <IcoArrow size={18} color={rating>0?C.bg:C.grayDark}/>
       </button>
     </div>
   );
@@ -696,7 +940,6 @@ function UnchartedApp() {
   const [tab, setTab] = useState("crew");
   const [profile, setProfile] = useState(null);
   const [connections, setConnections] = useState(new Set());
-  const [cart, setCart] = useState({});
 
   const handleEnter = () => setScreen("onboarding");
   const handleOnboardingComplete = (data) => { setProfile(data); setScreen("main"); };
@@ -704,30 +947,32 @@ function UnchartedApp() {
     setConnections(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
   }, []);
 
-  const cartCount = Object.values(cart).reduce((s, v) => s + v, 0);
+  const handleUpdateProfile = useCallback((newSocials) => {
+    setProfile(prev => ({...prev, socials: newSocials}));
+  }, []);
 
   return (
-    <div style={{ maxWidth: 430, margin: "0 auto", minHeight: "100vh", background: C.bg, color: C.white, fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', position: "relative", display: "flex", flexDirection: "column" }}>
-      {screen === "splash" && <SplashScreen onEnter={handleEnter} />}
-      {screen === "onboarding" && <OnboardingScreen onComplete={handleOnboardingComplete} />}
+    <div style={{maxWidth:430,margin:"0 auto",minHeight:"100vh",background:C.bg,color:C.white,fontFamily:'-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',position:"relative",display:"flex",flexDirection:"column"}}>
+      {screen === "splash" && <SplashScreen onEnter={handleEnter}/>}
+      {screen === "onboarding" && <OnboardingScreen onComplete={handleOnboardingComplete}/>}
       {screen === "main" && (
         <>
-          <Header profile={profile} />
-          <div style={{ flex: 1, overflowY: "auto" }} className="no-scrollbar">
-            {tab === "crew" && <CrewBoard profile={profile} connections={connections} onConnect={handleConnect} />}
-            {tab === "moments" && <MomentsFeed profile={profile} />}
-            {tab === "eats" && <EatsMenu cart={cart} setCart={setCart} />}
-            {tab === "vibes" && <VibeLayer />}
-            {tab === "rate" && <Closeout profile={profile} connections={connections} />}
+          <Header profile={profile}/>
+          <div style={{flex:1,overflowY:"auto"}} className="no-scrollbar">
+            {tab === "crew" && <CrewBoard profile={profile} connections={connections} onConnect={handleConnect} onUpdateProfile={handleUpdateProfile}/>}
+            {tab === "moments" && <MomentsFeed profile={profile}/>}
+            {tab === "hunt" && <ScavengerHunt/>}
+            {tab === "vibes" && <VibeLayer/>}
+            {tab === "rate" && <Closeout profile={profile} connections={connections}/>}
           </div>
-          <BottomNav active={tab} onNav={setTab} cartCount={cartCount} />
+          <BottomNav active={tab} onNav={setTab}/>
         </>
       )}
     </div>
   );
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(<UnchartedApp />);
+ReactDOM.createRoot(document.getElementById("root")).render(<UnchartedApp/>);
 </script>
 </body>
 </html>
