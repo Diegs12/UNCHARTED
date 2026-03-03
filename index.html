@@ -19,9 +19,12 @@
   @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
   @keyframes scaleIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
   @keyframes slideUp{from{opacity:0;transform:translateY(100%)}to{opacity:1;transform:translateY(0)}}
-  @keyframes glow{0%,100%{box-shadow:0 0 8px #00d4aa44}50%{box-shadow:0 0 24px #00d4aa88}}
+  @keyframes glow{0%,100%{box-shadow:0 0 8px #3dd98a44}50%{box-shadow:0 0 24px #3dd98a88}}
   @keyframes confetti{0%{transform:translateY(0) rotate(0)}100%{transform:translateY(-20px) rotate(360deg);opacity:0}}
-  .gradient-text{background:linear-gradient(135deg,#00d4aa 0%,#00bcd4 50%,#c6f135 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  @keyframes splashGradient{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+  @keyframes splashFadeIn{0%{opacity:0;transform:scale(0.95)}100%{opacity:1;transform:scale(1)}}
+  @keyframes splashTagline{0%{opacity:0;letter-spacing:12px}100%{opacity:1;letter-spacing:6px}}
+  .gradient-text{background:linear-gradient(135deg,#b8e926 0%,#3dd98a 50%,#00bfb3 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
   .no-scrollbar::-webkit-scrollbar{display:none}
   .no-scrollbar{-ms-overflow-style:none;scrollbar-width:none}
 </style>
@@ -41,10 +44,10 @@ const { useState, useEffect, useCallback, useMemo } = React;
 
 const C = {
   bg:"#0a0a0a", card:"#141414", cardHover:"#1c1c1c",
-  teal:"#00d4aa", cyan:"#00bcd4", lime:"#c6f135",
+  teal:"#3dd98a", cyan:"#00bfb3", lime:"#b8e926",
   white:"#ffffff", gray:"#888", grayLight:"#aaa", grayDark:"#333",
-  gradient:"linear-gradient(135deg, #00d4aa, #00bcd4, #c6f135)",
-  gradientText:"linear-gradient(135deg, #00d4aa 0%, #00bcd4 50%, #c6f135 100%)",
+  gradient:"linear-gradient(135deg, #b8e926, #3dd98a, #00bfb3)",
+  gradientText:"linear-gradient(135deg, #b8e926 0%, #3dd98a 50%, #00bfb3 100%)",
   orange:"#ff8c42", coral:"#ff6b6b",
 };
 
@@ -112,18 +115,18 @@ const DEMO_CREW = [
 ];
 
 const MOMENT_GRADIENTS = [
-  "linear-gradient(135deg,#f6d365 0%,#fda085 100%)","linear-gradient(135deg,#00d4aa 0%,#00597a 100%)",
-  "linear-gradient(135deg,#c6f135 30%,#00bcd4 100%)","linear-gradient(135deg,#ff6b6b 0%,#fda085 100%)",
-  "linear-gradient(135deg,#0a2342 0%,#00bcd4 100%)","linear-gradient(135deg,#00d4aa 0%,#c6f135 100%)",
-  "linear-gradient(135deg,#fda085 0%,#f5576c 100%)","linear-gradient(135deg,#00597a 0%,#00d4aa 100%)",
+  "linear-gradient(135deg,#f6d365 0%,#fda085 100%)","linear-gradient(135deg,#3dd98a 0%,#00597a 100%)",
+  "linear-gradient(135deg,#b8e926 30%,#00bfb3 100%)","linear-gradient(135deg,#ff6b6b 0%,#fda085 100%)",
+  "linear-gradient(135deg,#0a2342 0%,#00bfb3 100%)","linear-gradient(135deg,#3dd98a 0%,#b8e926 100%)",
+  "linear-gradient(135deg,#fda085 0%,#f5576c 100%)","linear-gradient(135deg,#00597a 0%,#3dd98a 100%)",
 ];
 
 const PRO_GALLERY = [
   {id:"g1",gradient:"linear-gradient(135deg,#f6d365,#fda085)",label:"Greeting Station",icon:"🤙"},
-  {id:"g2",gradient:"linear-gradient(135deg,#00d4aa,#00597a)",label:"Fleet Launch",icon:"🚤"},
-  {id:"g3",gradient:"linear-gradient(135deg,#c6f135,#00bcd4)",label:"Beach Vibes",icon:"🏖️"},
+  {id:"g2",gradient:"linear-gradient(135deg,#3dd98a,#00597a)",label:"Fleet Launch",icon:"🚤"},
+  {id:"g3",gradient:"linear-gradient(135deg,#b8e926,#00bfb3)",label:"Beach Vibes",icon:"🏖️"},
   {id:"g4",gradient:"linear-gradient(135deg,#a18cd1,#fbc2eb)",label:"Cabana Scene",icon:"🍹"},
-  {id:"g5",gradient:"linear-gradient(135deg,#0a2342,#00bcd4)",label:"Aerial Shot",icon:"🌊"},
+  {id:"g5",gradient:"linear-gradient(135deg,#0a2342,#00bfb3)",label:"Aerial Shot",icon:"🌊"},
   {id:"g6",gradient:"linear-gradient(135deg,#f5576c,#fda085)",label:"Après Party",icon:"🎉"},
 ];
 
@@ -147,7 +150,7 @@ const HUNT_CLUES = [
   { id:"tide-pool", name:"Tide Pool", emoji:"🪸", word:"ride", riddle:"Follow the rocky path past the lookout point — a tiny ocean hides in the stones where the waves can't reach.", color:"#4facfe" },
   { id:"driftwood", name:"Driftwood", emoji:"🪵", word:"away", riddle:"Near the bonfire pit where the boardwalk ends, sun-bleached wood rests against the palms — shaped by the sea, saved by the shore.", color:"#fda085" },
   { id:"sandcastle", name:"Sandcastle", emoji:"🏰", word:"from", riddle:"On the stretch between the cabana and the waterline, towers built from dreams and grains stand for hours, no more.", color:"#fee140" },
-  { id:"coral-reef", name:"Coral Reef", emoji:"🪷", word:"extraordinary", riddle:"Take the path to the snorkel station at the south cove — a rainbow city lives beneath the blue, alive though it looks like stone.", color:"#00bcd4" },
+  { id:"coral-reef", name:"Coral Reef", emoji:"🪷", word:"extraordinary", riddle:"Take the path to the snorkel station at the south cove — a rainbow city lives beneath the blue, alive though it looks like stone.", color:"#00bfb3" },
 ];
 
 const FULL_PHRASE = "You're always one ride away from extraordinary";
@@ -157,24 +160,53 @@ const FULL_PHRASE = "You're always one ride away from extraordinary";
 // ═══════════════════════════════════════════════════════════
 
 function SplashScreen({ onEnter }) {
-  const [visible, setVisible] = useState(false);
-  useEffect(() => { setTimeout(() => setVisible(true), 100); }, []);
+  const [phase, setPhase] = useState(0); // 0=black, 1=gradient bg, 2=logo, 3=taglines, 4=button
+  useEffect(() => {
+    const t1 = setTimeout(() => setPhase(1), 300);   // gradient bg fades in
+    const t2 = setTimeout(() => setPhase(2), 900);   // SEA-DOO logo fades in
+    const t3 = setTimeout(() => setPhase(3), 1600);  // LIVE THE / LIFE taglines
+    const t4 = setTimeout(() => setPhase(4), 2200);  // enter button
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); };
+  }, []);
   return (
-    <div style={{position:"fixed",inset:0,background:C.bg,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",zIndex:100,padding:"40px 24px",transition:"opacity 0.5s",opacity:visible?1:0}}>
-      <div style={{position:"absolute",top:0,left:0,right:0,height:"40%",overflow:"hidden",opacity:0.15}}>
-        <div style={{position:"absolute",bottom:0,left:"-10%",right:"-10%",height:200,borderRadius:"50%",background:C.gradient,animation:"wave 6s ease-in-out infinite"}}/>
-        <div style={{position:"absolute",bottom:-30,left:"-10%",right:"-10%",height:200,borderRadius:"50%",background:C.gradient,opacity:0.5,animation:"wave 8s ease-in-out infinite reverse"}}/>
+    <div style={{position:"fixed",inset:0,background:"#000",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",zIndex:100,overflow:"hidden"}}>
+      {/* Animated gradient background overlay */}
+      <div style={{position:"absolute",inset:0,background:"linear-gradient(135deg, #b8e926, #5ce89e, #00bfb3, #3dd98a, #b8e926)",backgroundSize:"400% 400%",animation:"splashGradient 8s ease infinite",opacity:phase>=1?0.12:0,transition:"opacity 1.2s ease"}}/>
+      {/* Subtle gradient glow behind logo */}
+      <div style={{position:"absolute",width:300,height:300,borderRadius:"50%",background:"radial-gradient(circle, #3dd98a22 0%, transparent 70%)",opacity:phase>=2?1:0,transition:"opacity 1.5s ease",filter:"blur(40px)"}}/>
+      {/* Logo group */}
+      <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:0,position:"relative",zIndex:2}}>
+        {/* LIVE THE */}
+        <div style={{fontSize:14,fontWeight:600,letterSpacing:phase>=3?6:12,color:"#fff",opacity:phase>=3?0.9:0,transition:"opacity 0.8s ease, letter-spacing 0.8s ease",marginBottom:12,fontFamily:"'Segoe UI',Roboto,Helvetica,Arial,sans-serif"}}>
+          LIVE THE
+        </div>
+        {/* SEA-DOO wordmark */}
+        <div style={{opacity:phase>=2?1:0,transform:phase>=2?"scale(1)":"scale(0.95)",transition:"opacity 0.8s ease, transform 0.8s ease"}}>
+          <svg width="260" height="52" viewBox="0 0 260 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+            {/* S */}
+            <path d="M0 40V36h8v4h16v-12H4V16h-4V4H8V0h20v4h4v12h-8V4H12v12h16v12h4v12h-4v4H4v-4H0z" fill="white"/>
+            {/* E */}
+            <path d="M40 0h28v8H48v12h16v8H48v12h20v8H40V0z" fill="white"/>
+            {/* A */}
+            <path d="M80 48V12h4V4h4V0h12v4h4v8h4v36h-8V28H88v20h-8zm8-28h12V8H88v12z" fill="white"/>
+            {/* Dot/circle separator */}
+            <circle cx="127" cy="32" r="5" fill="white"/>
+            {/* D */}
+            <path d="M140 0h20v4h4v4h4v28h-4v4h-4v4h4v4h-24V0zm8 8v32h12V40h4V12h-4V8h-12z" fill="white"/>
+            {/* O */}
+            <path d="M180 4h4V0h16v4h4v4h4v32h-4v4h-4v4h-16v-4h-4v-4h-4V8h4V4zm4 36h16V8h-16v32z" fill="white"/>
+            {/* O */}
+            <path d="M220 4h4V0h16v4h4v4h4v32h-4v4h-4v4h-16v-4h-4v-4h-4V8h4V4zm4 36h16V8h-16v32z" fill="white"/>
+          </svg>
+        </div>
+        {/* LIFE */}
+        <div style={{fontSize:14,fontWeight:600,letterSpacing:phase>=3?6:12,color:"#fff",opacity:phase>=3?0.9:0,transition:"opacity 0.8s ease, letter-spacing 0.8s ease",marginTop:12,fontFamily:"'Segoe UI',Roboto,Helvetica,Arial,sans-serif"}}>
+          LIFE
+        </div>
       </div>
-      <div style={{width:120,height:120,borderRadius:20,display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:3,padding:12,background:C.card,border:`1px solid ${C.grayDark}`,animation:"float 4s ease-in-out infinite",marginBottom:40}}>
-        {Array.from({length:25}).map((_,i) => <div key={i} style={{borderRadius:3,background:[0,1,4,5,6,9,10,14,15,19,20,21,24].includes(i)?C.teal:[2,12,22].includes(i)?C.cyan:[3,7,11,16,23].includes(i)?C.lime:C.grayDark,opacity:[0,1,4,5,6,9,10,14,15,19,20,21,24].includes(i)?1:0.6}}/>)}
-      </div>
-      <div style={{textAlign:"center",animation:"fadeUp 0.8s ease-out forwards",marginBottom:12}}>
-        <div style={{fontSize:13,letterSpacing:6,color:C.gray,marginBottom:8,fontWeight:500}}>SEA-DOO LEGENDARY MEETUPS</div>
-        <h1 className="gradient-text" style={{fontSize:48,fontWeight:800,letterSpacing:2,lineHeight:1}}>UNCHARTED</h1>
-      </div>
-      <p style={{color:C.grayLight,fontSize:14,textAlign:"center",maxWidth:260,lineHeight:1.6,marginBottom:48,animation:"fadeUp 0.8s ease-out 0.2s both"}}>Your digital companion for today's adventure. Connect. Capture. Ride.</p>
-      <button onClick={onEnter} style={{padding:"16px 48px",borderRadius:50,color:C.bg,fontWeight:700,fontSize:16,background:C.gradient,letterSpacing:1,transition:"transform 0.15s, box-shadow 0.15s",boxShadow:`0 0 30px ${C.teal}33`,animation:"fadeUp 0.8s ease-out 0.4s both"}} onMouseDown={e=>e.currentTarget.style.transform="scale(0.96)"} onMouseUp={e=>e.currentTarget.style.transform="scale(1)"}>ENTER AS DEMO GUEST</button>
-      <p style={{color:C.grayDark,fontSize:11,marginTop:24,letterSpacing:1,animation:"fadeUp 0.8s ease-out 0.6s both"}}>SCAN YOUR SWAG TO ENTER</p>
+      {/* Enter button */}
+      <button onClick={onEnter} style={{position:"relative",zIndex:2,marginTop:64,padding:"16px 48px",borderRadius:50,color:"#000",fontWeight:700,fontSize:15,background:C.gradient,letterSpacing:1,opacity:phase>=4?1:0,transform:phase>=4?"translateY(0)":"translateY(12px)",transition:"opacity 0.6s ease, transform 0.6s ease, box-shadow 0.15s",boxShadow:`0 0 30px ${C.teal}33`}} onMouseDown={e=>e.currentTarget.style.transform="scale(0.96)"} onMouseUp={e=>e.currentTarget.style.transform="scale(1)"}>ENTER AS DEMO GUEST</button>
+      <p style={{position:"relative",zIndex:2,color:"#444",fontSize:11,marginTop:20,letterSpacing:1,opacity:phase>=4?1:0,transition:"opacity 0.6s ease 0.2s"}}>SCAN YOUR SWAG TO ENTER</p>
     </div>
   );
 }
@@ -912,7 +944,7 @@ function Closeout({ profile, connections }) {
         </div>
       )}
       <div style={{borderRadius:16,overflow:"hidden",marginBottom:20,border:giveaway?`1px solid ${C.lime}33`:`1px solid ${C.grayDark}`,background:giveaway?`${C.lime}06`:C.card,transition:"all 0.2s"}}>
-        <div style={{height:80,background:"linear-gradient(135deg, #00d4aa 0%, #c6f135 50%, #00bcd4 100%)",display:"flex",alignItems:"center",justifyContent:"center",position:"relative"}}>
+        <div style={{height:80,background:"linear-gradient(135deg, #b8e926 0%, #3dd98a 50%, #00bfb3 100%)",display:"flex",alignItems:"center",justifyContent:"center",position:"relative"}}>
           <span style={{fontSize:40}}>🌺</span>
           <div style={{position:"absolute",top:8,right:10,background:"rgba(0,0,0,0.5)",backdropFilter:"blur(6px)",padding:"3px 10px",borderRadius:10}}><span style={{fontSize:10,color:C.white,fontWeight:700,letterSpacing:1}}>LIMITED EDITION</span></div>
         </div>
